@@ -1,0 +1,1 @@
+{"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Iterable"],"module":"ESNext","moduleResolution":"Bundler","noUnusedLocals":true,"noUnusedParameters":true,"resolveJsonModule":true,"skipLibCheck":true,"strict":true,"target":"ES2022","types":["vite/client"],"useDefineForClassFields":true},"include":["src","tests","e2e"]}

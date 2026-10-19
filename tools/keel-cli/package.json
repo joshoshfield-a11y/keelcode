@@ -1,0 +1,1 @@
+{"bin":{"keel":"./bin/keel.mjs"},"description":"KeelCode's primary interface — scaffold, run, build, test, and smoke-test KeelCode games","name":"@keelcode/keel-cli","type":"module","version":"0.1.0"}
