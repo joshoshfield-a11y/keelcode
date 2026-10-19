@@ -153,49 +153,85 @@ async function runScript(
   // Freeze the sim before the game even starts: zero live playing ticks.
   await page.evaluate(() => (window as any).__keel.loop.stop());
 
+  // Suppress ALL mousemove delivery to the game for the recording. Rationale:
+  // when pointer lock engages, Chromium dispatches a mousemove whose
+  // movementX/Y is the warp delta from the pre-lock cursor position to the
+  // lock origin (observed: [-639,-335] — the start-button position negated).
+  // The game's document-level mousemove handler feeds that straight into
+  // addLook(), swinging the camera yaw ~90 degrees before tick 0. That warp
+  // is a browser quirk, not user input; the headless Rust sim has no mouse at
+  // all, so for parity the recording must be keyboard/mouse-button only with
+  // yaw pinned at its reset value (PI). (The underlying game behavior — the
+  // camera swinging on lock acquisition — is a real bug, flagged in the Wave
+  // 2 report; the harness works around it rather than touching frozen Wave 1
+  // game sources.) mousedown/mouseup (fire) are unaffected.
+  await page.evaluate(() => {
+    window.addEventListener(
+      "mousemove",
+      (e) => {
+        e.stopImmediatePropagation();
+      },
+      true,
+    );
+  });
+
   await page.getByTestId("start-button").click();
   // Let the UI-click input suppression (suppressUntil = now+300ms) expire.
   await page.waitForTimeout(400);
 
-  // Pointer lock gates firing (player.ts canFire). The canvas click listener
-  // requests it; this is the trusted gesture.
-  const box = await page.evaluate(() => {
-    const c = document.querySelector("canvas")!.getBoundingClientRect();
-    return { x: c.x + c.width / 2, y: c.y + c.height / 2 };
+  // Pointer lock gates firing (player.ts canFire). Request it WITHOUT moving
+  // the mouse: page.mouse.click would generate mousemove events that, if
+  // processed after lock engages, swing the camera yaw via movementX/Y and
+  // make runs diverge. The synthetic click rides the transient activation
+  // from the real start-button click above, and the canvas 'click' listener
+  // requests the lock. No mousemove is ever generated after this point.
+  await page.evaluate(() => {
+    (document.querySelector("canvas") as HTMLElement).click();
   });
-  await page.mouse.click(box.x, box.y);
   await page.waitForTimeout(250);
   const pointerLocked = await page.evaluate(
     () => !!document.pointerLockElement,
   );
 
   const snaps: Snapshot[] = [];
-  const mouseDown = new Set<string>();
   for (let tick = 0; tick < totalTicks; tick++) {
+    // Apply this tick's input events and advance the sim inside ONE evaluate
+    // so event delivery is synchronous with the step: no CDP input-pipeline
+    // race can shift a key/mouse event by a tick between runs. (The old
+    // page.keyboard/page.mouse path was async and produced ~1-tick slips.)
+    type DueEvent =
+      | { kind: "mouse"; down: boolean }
+      | { kind: "key"; code: string; down: boolean };
+    const due: DueEvent[] = [];
     for (const e of byTick.get(tick) ?? []) {
       if (e.action === "fire") {
         if (!pointerLocked) continue; // movement-only fallback vector
-        if (e.down) {
-          await page.mouse.down();
-          mouseDown.add("fire");
-        } else {
-          await page.mouse.up();
-          mouseDown.delete("fire");
-        }
+        due.push({ kind: "mouse", down: e.down });
       } else {
-        const key = KEY_FOR[e.action];
-        if (!key) throw new Error(`no key mapping for action ${e.action}`);
-        if (e.down) await page.keyboard.down(key);
-        else await page.keyboard.up(key);
+        const code = KEY_FOR[e.action];
+        if (!code) throw new Error(`no key mapping for action ${e.action}`);
+        due.push({ kind: "key", code, down: e.down });
       }
     }
-    await page.evaluate(() => (window as any).__keel.loop.step());
+    await page.evaluate((dueEvents: DueEvent[]) => {
+      for (const e of dueEvents) {
+        if (e.kind === "mouse") {
+          window.dispatchEvent(
+            new MouseEvent(e.down ? "mousedown" : "mouseup", { button: 0 }),
+          );
+        } else {
+          window.dispatchEvent(
+            new KeyboardEvent(e.down ? "keydown" : "keyup", { code: e.code }),
+          );
+        }
+      }
+      (window as any).__keel.loop.step();
+    }, due);
     if ((tick + 1) % SNAP_EVERY === 0)
       snaps.push(await readSnapshot(page, tick + 1));
   }
   // Any still-held inputs are dropped by the fresh navigation the next
   // runScript() starts with (gotoApp reloads the page).
-  void mouseDown;
 
   // --- derive the event log by diffing snapshots ---
   const events: VecEvent[] = [];
@@ -229,14 +265,24 @@ async function runScript(
         }
       }
       if (s.player.hp < prev.player.hp) {
-        events.push({
-          tick: s.tick,
-          kind: "damage",
-          detail: {
-            dmg: +(prev.player.hp - s.player.hp).toFixed(6),
-            hp: s.player.hp,
-          },
-        });
+        // The sim deals damage in fixed 12-hp hits (ENEMY_TUNING.damage); a
+        // 10-tick snapshot window can contain several hits, which the naive
+        // diff would coalesce into one event with an inflated dmg. Split the
+        // observed drop into individual 12-hp hit events so the log matches
+        // the Rust sim's per-hit event stream. The final hit may overkill
+        // (drop < 12 when hp clamps at 0); ceil() counts it as a hit.
+        const drop = prev.player.hp - s.player.hp;
+        const hits = Math.max(1, Math.ceil(drop / 12));
+        for (let i = 0; i < hits; i++) {
+          events.push({
+            tick: s.tick,
+            kind: "damage",
+            detail: {
+              dmg: 12,
+              hp: Math.max(0, prev.player.hp - 12 * (i + 1)),
+            },
+          });
+        }
         if (prev.player.hp > 0 && s.player.hp <= 0)
           events.push({
             tick: s.tick,
@@ -278,6 +324,7 @@ for (const name of ["move", "combat"]) {
   test(`parity-record ${name}: two runs, identical vectors`, async ({
     page,
   }) => {
+    test.slow(); // 900 ticks x evaluate round-trips needs the 3x budget
     const a = await runScript(page, name);
     const b = await runScript(page, name);
     const sa = JSON.stringify(a.vector);
