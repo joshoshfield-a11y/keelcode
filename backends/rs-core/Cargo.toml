@@ -1,0 +1,27 @@
+[package]
+name = "keel-rs"
+version = "0.1.0"
+edition = "2024"
+description = "KeelCode Rust backend — headless sim implementing framework/SPEC.md v1 (Wave 2a)"
+
+[lib]
+name = "keel_rs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "keel-rs"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+glam = { version = "0.30", features = ["serde"] }
+# Pinned to the SAME upstream release the TS reference uses:
+# @dimforge/rapier3d-compat 0.14.0 wraps rapier 0.22 (rapier.js CHANGELOG, 2024-07-20).
+# rapier3d 0.22 has NO f64 feature (verified via crates.io API) — f32 on both
+# backends, so this pin is the closest behavioral match. Sim math stays f64
+# (glam DVec3/DQuat); conversion happens at the physics boundary only.
+rapier3d = "=0.22.0"
+clap = { version = "4.5", features = ["derive"] }
+
+[dev-dependencies]
