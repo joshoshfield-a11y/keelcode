@@ -195,16 +195,28 @@ function pollPreview(port, maxMs) {
   })();
 }
 
+async function ensureDist(root, backend) {
+  // Mirror the 4a smoke script: a fresh checkout has no gitignored dist/,
+  // and the perf harness (vite preview) needs a built app.
+  const dir = join(root, 'backends', backend);
+  if (!existsSync(join(dir, 'dist', 'index.html'))) {
+    console.log(`keel perf: dist/ missing for ${backend} — running npm run build first`);
+    await run('npm', ['run', 'build'], dir);
+  }
+}
+
 async function cmdPerf(root, rest) {
   const backend = flagValue(rest, '--backend');
   const backends = backend ? [backend] : ['ts-three', 'ts-babylon'];
   for (const b of backends) checkBackend(b);
   for (const b of backends) {
     if (b === 'ts-three') {
+      await ensureDist(root, b);
       await passthrough(process.execPath, [join(root, 'tools', 'perf-harness', 'perf.mjs'), '--tier', 'desktop'],
         join(root, 'backends', 'ts-three'));
     } else if (b === 'ts-babylon') {
       const babylon = join(root, 'backends', 'ts-babylon');
+      await ensureDist(root, b);
       const server = spawn('npx', ['vite', 'preview', '--', '--port', '4174', '--strictPort'], {
         cwd: babylon,
         stdio: 'pipe',
@@ -233,6 +245,7 @@ async function cmdVectors(root, rest) {
       for (const f of files) console.log(join(dir, f));
       if (files.length === 0) console.log('keel vectors: no pre-recorded vectors in ' + dir);
     } else {
+      await ensureDist(root, b);
       await passthrough('npx', ['playwright', 'test', 'e2e/parity-record.spec.ts'], join(root, 'backends', b));
     }
   }

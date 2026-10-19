@@ -55,6 +55,10 @@ then `ts-babylon`.
 
 A failing harness (non-zero exit) fails the command.
 
+Both TS backends build first (`npm run build`) when `dist/index.html` is
+missing — same guard the 4a smoke script uses, so `keel perf` works on a
+fresh checkout.
+
 ### keel vectors [--backend \<name>]
 
 Record (or list) parity vector files for a backend. Default: `ts-three`,
@@ -66,6 +70,10 @@ then `ts-babylon`.
   and exits 0. rs-core consumes pre-recorded vectors; it does not record.
 
 Exit 1 on an unknown `--backend`.
+
+The TS recording specs run against `vite preview`, so `keel vectors` also
+builds first (`npm run build`) when `dist/index.html` is missing — same as
+`keel perf`.
 
 ### keel bake \<asset-dir> [--out \<dir>] [--strict] [--budget \<file>]
 
