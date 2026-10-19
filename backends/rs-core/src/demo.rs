@@ -707,6 +707,12 @@ impl Demo {
         Ok(())
     }
 
+    /// Live-input hook for the desktop binary (Wave 2b): forwards to
+    /// [`InputSys::set_action_state`]. Additive; sim behavior unchanged.
+    pub fn set_action_state(&mut self, name: &str, down: bool) {
+        self.inner.borrow_mut().input.set_action_state(name, down);
+    }
+
     pub fn score(&self) -> u64 {
         self.inner.borrow().score
     }

@@ -117,6 +117,18 @@ impl InputSys {
         self.actions.get(name).is_some_and(|a| a.down)
     }
 
+    /// Live-input hook (Wave 2b desktop binary): set an action's `down`
+    /// state directly, outside the scripted log. Unknown actions are
+    /// ignored. Edges (`pressed`/`released`) are derived by the next
+    /// `update(tick)` call exactly as for scripted events, so a key held
+    /// across frames yields one `pressed` tick. Additive — script behavior
+    /// is untouched.
+    pub fn set_action_state(&mut self, name: &str, down: bool) {
+        if let Some(a) = self.actions.get_mut(name) {
+            a.down = down;
+        }
+    }
+
     /// True on the tick an action goes down (per-tick edge, like the TS
     /// scripted input; sub-frame taps are not a concept here).
     pub fn pressed(&self, name: &str) -> bool {

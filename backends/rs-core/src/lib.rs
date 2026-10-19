@@ -19,6 +19,7 @@ pub mod demo;
 pub mod ecs;
 pub mod input;
 pub mod physics;
+pub mod render;
 pub mod rng;
 pub mod save;
 pub mod sim_loop;
