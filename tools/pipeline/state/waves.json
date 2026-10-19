@@ -27,7 +27,7 @@
    "brief": "workspace/game-kb/WAVE4-BRIEF.md",
    "n": 4,
    "name": "Convergence",
-   "notes": "4a-4c MERGED to main 2026-10-19 (a571caa): shared smoke CI (keel smoke all backends exit 0), asset-baker CLI v1, broader keel CLI (new --backend/perf/vectors/bake/room). All gates green, no regressions. 4d starting: first real game = STARFALL (user's 'Do it' 2026-10-19), rescoped against arena-proven systems per the brief. Runner must not touch this wave.",
+   "notes": "4a-4c MERGED to main 2026-10-19 (a571caa). 4d BUILDING: STARFALL: Drift Arena (user's 'Do it' 2026-10-19, rescope approved) — 3D vertical slice on ts-three via the keel CLI, parent-owned external coordinator on branch wave-4d. Screenshots owed to the user on completion. Original ~/workspace/starfall/ must stay byte-identical. Runner must not touch this wave.",
    "status": "in_progress_external"
   }
  ]
