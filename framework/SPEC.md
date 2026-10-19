@@ -123,7 +123,7 @@ expected component state after N ticks against its own recorded vectors.
 - Every baked asset gets a manifest entry: `{id, type, source_hash,
   dist_hash, lod_tiers[], budget_cost}`. Schema in
   `framework/schema/asset-manifest.schema.json`.
-- Naming: `category/name/variant` (e.g. `chars/raider/visor-amber`).
+- Naming: `category/name/variant` (e.g. `chars/scout/jacket-blue`).
   Versioning is by content hash, never by filename bump.
 - Test: the baker validates the manifest on every run; a missing or
   hash-mismatched asset fails the build before any backend boots.

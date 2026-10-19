@@ -1,0 +1,1 @@
+{"$comment":"KeelCode Wave 1 perf budgets for the ts-three reference demo scene. Binding rule (framework/SPEC.md section 4): no wave may regress any number here without the regression being measured, disclosed, and explicitly waived by the user.","dpr":{"desktop":2.0,"mobile":1.5},"frameTimeP95Ms":33.3,"maxDrawCalls":150,"maxTriangles":300000}
