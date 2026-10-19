@@ -15,6 +15,7 @@
 
 pub mod audio;
 pub mod components;
+pub mod demo;
 pub mod ecs;
 pub mod input;
 pub mod physics;

@@ -1,0 +1,10 @@
+{
+  "name": "combat",
+  "ticks": 900,
+  "events": [
+    { "tick": 0,   "action": "moveFwd", "down": true  },
+    { "tick": 30,  "action": "fire",    "down": true  },
+    { "tick": 870, "action": "fire",    "down": false },
+    { "tick": 880, "action": "moveFwd", "down": false }
+  ]
+}
