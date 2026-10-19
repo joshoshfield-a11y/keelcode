@@ -1,0 +1,587 @@
+# repo-map: /home/hatch/workspace/keelcode/backends/ts-three/src
+# 21 files (depth<=3, showing first 400)
+
+engine/
+game/
+gfx/
+
+# symbols
+
+## main.ts
+  [type] World (L15)
+  [type] FrameCtx (L16)
+  [type] Loop (L16)
+  [type] InputSys (L17)
+  [type] Binding (L17)
+  [type] PhysicsSys (L18)
+  [type] AudioSys (L19)
+  [type] SaveSys (L20)
+  [type] SaveData (L20)
+  [type] ArenaData (L22)
+  [type] PickupState (L27)
+  [type] TransformFull (L31)
+  [type] HealthFull (L31)
+  [type] Mode (L33)
+  [if] Window (L36) — interface Window {
+  [prototype] __keel (L37) — __keel: { world: World; loop: Loop; input: InputSys; playerId: number; renderer: THREE.WebGL
+  [const] STEP (L41)
+  [const] SAVE_SLOT (L42)
+  [if] DemoSave (L44) — interface DemoSave extends SaveData {
+  [prototype] score (L45) — score: number;
+  [const] _shake (L48)
+  [const] K (L50)
+  [const] T (L51)
+  [const] M (L52)
+  [fn] boot (L54) — async function boot(): Promise<void> {
+  [const] app (L55)
+  [const] ui (L56)
+  [const] isMobile (L57)
+  [const] renderer (L60)
+  [const] canvas (L73)
+  [const] scene (L75)
+  [const] camera (L76)
+  [const] world (L79)
+  [const] loop (L80)
+  [const] input (L81)
+  [const] physics (L82)
+  [const] audio (L83)
+  [const] saveSys (L84)
+  [var] mode (L99)
+  [var] score (L100)
+
+## engine/audio.ts
+  [if] AudioSys (L20) — export interface AudioSys {
+  [m] resume (L22) — resume(): void;
+  [m] play (L23) — play(id: string, opts?: { volume?: number }): void;
+  [m] setIntensity (L24) — setIntensity(x: number): void;
+  [m] setMuted (L25) — setMuted(m: boolean): void;
+  [const] MAX_VOICES (L28)
+  [const] PENTA (L29)
+  [const] MUSIC_ROOT (L30)
+  [fn] envGain (L32) — function envGain(ctx: AudioContext, t0: number, peak: number, dur: number): GainNode {
+  [const] g (L33)
+  [fn] createAudio (L40) — export function createAudio(): AudioSys {
+  [const] osc (L64)
+  [const] len (L82)
+  [const] buf (L83)
+  [const] data (L84)
+  [const] src (L86)
+  [const] filt (L88)
+  [const] f (L107)
+  [const] t0 (L116)
+  [const] density (L117)
+  [const] semi (L119)
+  [const] Math (L119)
+  [const] t (L139)
+  [const] wob (L140)
+  [const] sys (L171)
+  [const] comp (L178)
+
+## engine/ecs.ts
+  [const] C (L16)
+  [if] TransformC (L31) — export interface TransformC {
+  [prototype] x (L32) — x: number; y: number; z: number;
+  [prototype] y (L32) — x: number; y: number; z: number;
+  [prototype] z (L32) — x: number; y: number; z: number;
+  [prototype] rx (L33) — rx: number; ry: number; rz: number;
+  [prototype] ry (L33) — rx: number; ry: number; rz: number;
+  [prototype] rz (L33) — rx: number; ry: number; rz: number;
+  [prototype] sx (L34) — sx: number; sy: number; sz: number;
+  [prototype] sy (L34) — sx: number; sy: number; sz: number;
+  [prototype] sz (L34) — sx: number; sy: number; sz: number;
+  [if] VelocityC (L36) — export interface VelocityC { x: number; y: number; z: number }
+  [if] HealthC (L37) — export interface HealthC { hp: number; maxHp: number }
+  [prototype] hp (L37) — export interface HealthC { hp: number; maxHp: number }
+  [prototype] maxHp (L37) — export interface HealthC { hp: number; maxHp: number }
+  [if] ColliderC (L38) — export interface ColliderC {
+  [prototype] kind (L39) — kind: 'box' | 'sphere' | 'capsule';
+  [prototype] hx (L40) — hx: number; hy: number; hz: number;
+  [prototype] hy (L40) — hx: number; hy: number; hz: number;
+  [prototype] hz (L40) — hx: number; hy: number; hz: number;
+  [if] RenderableC (L43) — export interface RenderableC {
+  [prototype] mesh (L44) — mesh: 'player' | 'enemy' | 'projectile' | 'pickup' | 'prop';
+  [prototype] tint (L45) — tint: number;
+  [prototype] visible (L46) — visible: boolean;
+  [if] InputC (L48) — export interface InputC { controlled: boolean }
+  [prototype] controlled (L48) — export interface InputC { controlled: boolean }
+  [if] AIC (L49) — export interface AIC { brain: 'chaser'; state: string; t: number; target: number }
+  [prototype] brain (L49) — export interface AIC { brain: 'chaser'; state: string; t: number; target: number }
+  [prototype] state (L49) — export interface AIC { brain: 'chaser'; state: string; t: number; target: number }
+  [prototype] t (L49) — export interface AIC { brain: 'chaser'; state: string; t: number; target: number }
+  [prototype] target (L49) — export interface AIC { brain: 'chaser'; state: string; t: number; target: number }
+  [if] LifetimeC (L50) — export interface LifetimeC { t: number; max: number }
+  [prototype] max (L50) — export interface LifetimeC { t: number; max: number }
+  [if] PickupC (L51) — export interface PickupC { kind: 'health'; amount: number; taken: boolean }
+  [prototype] amount (L51) — export interface PickupC { kind: 'health'; amount: number; taken: boolean }
+  [prototype] taken (L51) — export interface PickupC { kind: 'health'; amount: number; taken: boolean }
+  [if] ProjectileC (L52) — export interface ProjectileC { damage: number; fromPlayer: boolean }
+  [prototype] damage (L52) — export interface ProjectileC { damage: number; fromPlayer: boolean }
+  [prototype] fromPlayer (L52) — export interface ProjectileC { damage: number; fromPlayer: boolean }
+  [if] World (L54) — export interface World {
+
+## engine/input.ts
+  [type] Binding (L25)
+  [if] InputSys (L31) — export interface InputSys {
+  [m] defineAction (L32) — defineAction(name: string, bindings: Binding[]): void;
+  [m] defineAxis (L33) — defineAxis(name: string, neg: string, pos: string): void;
+  [m] isDown (L34) — isDown(name: string): boolean;
+  [m] pressed (L35) — pressed(name: string): boolean;
+  [m] released (L36) — released(name: string): boolean;
+  [m] axis (L37) — axis(name: string): number;
+  [m] attach (L38) — attach(): void;
+  [m] detach (L39) — detach(): void;
+  [m] update (L41) — update(): void;
+  [m] enableTouchControls (L43) — enableTouchControls(container: HTMLElement): void;
+  [if] ActionState (L46) — interface ActionState {
+  [prototype] bindings (L47) — bindings: Binding[];
+  [prototype] down (L48) — down: boolean;
+  [prototype] prev (L49) — prev: boolean;
+  [prototype] edgePressed (L50) — edgePressed: boolean;
+  [prototype] edgeReleased (L51) — edgeReleased: boolean;
+  [const] JOY_RADIUS (L54)
+  [const] JOY_DEAD (L55)
+  [const] PAD_TRIGGER_THRESHOLD (L56)
+  [const] padScratch (L59)
+  [fn] createInput (L61) — export function createInput(): InputSys {
+  [const] actions (L62)
+  [const] axes (L63)
+  [const] keys (L64)
+  [const] mouse (L65)
+  [const] touchState (L66)
+  [const] pressQueue (L68)
+  [const] sourceToActions (L69)
+  [const] boundCodes (L70)
+  [const] boundMouse (L71)
+  [const] name (L91)
+  [const] a (L91)
+  [const] b (L92)
+  [const] sk (L93)
+  [const] names (L107)
+  [const] n (L109)
+  [const] pads (L115)
+  [const] gp (L117)
+
+## engine/loop.ts
+  [type] Phase (L25)
+  [if] FrameCtx (L27) — export interface FrameCtx {
+  [prototype] dt (L29) — dt: number;
+  [prototype] tick (L31) — tick: number;
+  [prototype] alpha (L33) — alpha: number;
+  [prototype] timeScale (L35) — timeScale: number;
+  [if] Loop (L38) — export interface Loop {
+  [m] on (L39) — on(phase: Phase, fn: (ctx: FrameCtx) => void): void;
+  [m] start (L40) — start(): void;
+  [m] stop (L41) — stop(): void;
+  [m] step (L43) — step(dt?: number): void;
+  [prototype] paused (L46) — paused: boolean;
+  [m] setTimeScale (L47) — setTimeScale(x: number): void;
+  [m] setPaused (L48) — setPaused(b: boolean): void;
+  [m] hitStop (L50) — hitStop(ms: number): void;
+  [const] STEP (L53)
+  [const] MAX_STEPS (L54)
+  [const] MAX_FRAME (L55)
+  [fn] nextFrame (L58) — function nextFrame(cb: (t: number) => void): number {
+  [fn] cancelFrame (L62) — function cancelFrame(id: number): void {
+  [fn] createLoop (L67) — export function createLoop(): Loop {
+  [const] handlers (L68)
+  [const] ctx (L75)
+  [const] tick (L75)
+  [const] list (L88)
+  [const] phase (L88)
+
+## engine/physics.ts
+  [if] BodyOpts (L25) — export interface BodyOpts {
+  [prototype] kind (L26) — kind: 'box' | 'sphere' | 'capsule';
+  [prototype] hx (L27) — hx: number;
+  [prototype] hy (L28) — hy: number;
+  [prototype] hz (L29) — hz: number;
+  [prototype] x (L30) — x: number;
+  [prototype] y (L31) — y: number;
+  [prototype] z (L32) — z: number;
+  [if] PhysicsSys (L36) — export interface PhysicsSys {
+  [prototype] ready (L37) — ready: Promise<void>;
+  [m] step (L38) — step(dt: number): void;
+  [m] addBody (L39) — addBody(o: BodyOpts): number;
+  [m] remove (L40) — remove(id: number): void;
+  [m] getPosition (L41) — getPosition(id: number, out: { x: number; y: number; z: number }): void;
+  [m] setVelocity (L42) — setVelocity(id: number, x: number, y: number, z: number): void;
+  [m] setKinematicPosition (L44) — setKinematicPosition(id: number, x: number, y: number, z: number): void;
+  [const] GRAVITY (L47)
+  [fn] createPhysics (L49) — export function createPhysics(): PhysicsSys {
+  [const] bodies (L52)
+  [const] ready (L54)
+  [const] desc (L69)
+  [const] body (L73)
+  [const] id (L88)
+  [const] t (L102)
+
+## engine/rng.ts
+  [fn] mulberry32 (L16) — export function mulberry32(seed: number): () => number {
+  [fn] hashSeed (L30) — export function hashSeed(master: number, salt: string): number {
+  [fn] createStreams (L47) — export function createStreams(master: number, salts: string[]): Record<string, () => number> {
+  [const] out (L48)
+  [const] number (L48)
+  [const] s (L49)
+
+## engine/save.ts
+  [if] SaveData (L19) — export interface SaveData {
+  [prototype] engine (L20) — engine: 'keelcode';
+  [prototype] format_version (L21) — format_version: number;
+  [prototype] seed (L22) — seed: number;
+  [prototype] tick (L23) — tick: number;
+  [prototype] components (L24) — components: Record<number, Record<string, unknown>>;
+  [if] SaveSys (L27) — export interface SaveSys {
+  [m] save (L28) — save(slot: string, data: SaveData): void;
+  [m] load (L29) — load(slot: string): SaveData | null;
+  [m] list (L30) — list(): string[];
+  [m] remove (L31) — remove(slot: string): void;
+  [const] CURRENT_VERSION (L35)
+  [type] Migration (L37)
+  [const] migrations (L39)
+  [fn] fnv1a (L43) — function fnv1a(str: string): number {
+  [if] Store (L52) — interface Store {
+  [m] get (L53) — get(k: string): string | null;
+  [m] set (L54) — set(k: string, v: string): void;
+  [m] keys (L56) — keys(): string[];
+  [fn] validShape (L59) — function validShape(d: unknown): d is SaveData {
+  [const] o (L61)
+  [fn] createSave (L72) — export function createSave(namespace: string): SaveSys {
+  [const] prefix (L73)
+  [const] mem (L74)
+  [const] probe (L80)
+  [const] store (L89)
+  [const] out (L95)
+  [const] k (L97)
+  [const] liveKey (L114)
+  [const] tempKey (L115)
+  [const] stamped (L119)
+  [const] engine (L119)
+  [const] inner (L120)
+  [const] envelope (L121)
+  [const] raw (L138)
+
+## game/arena.ts
+  [if] AABB (L12) — export interface AABB { minx: number; miny: number; minz: number; maxx: number; maxy: number; ma
+  [prototype] minx (L12) — export interface AABB { minx: number; miny: number; minz: number; maxx: number; maxy: number; ma
+  [prototype] miny (L12) — export interface AABB { minx: number; miny: number; minz: number; maxx: number; maxy: number; ma
+  [prototype] minz (L12) — export interface AABB { minx: number; miny: number; minz: number; maxx: number; maxy: number; ma
+  [prototype] maxx (L12) — export interface AABB { minx: number; miny: number; minz: number; maxx: number; maxy: number; ma
+  [prototype] maxy (L12) — export interface AABB { minx: number; miny: number; minz: number; maxx: number; maxy: number; ma
+  [prototype] maxz (L12) — export interface AABB { minx: number; miny: number; minz: number; maxx: number; maxy: number; ma
+  [if] ArenaData (L14) — export interface ArenaData {
+  [prototype] half (L15) — half: number;
+  [prototype] pillarSpots (L16) — pillarSpots: Array<{ x: number; z: number; r: number }>;
+  [prototype] statics (L17) — statics: AABB[];
+  [m] raycast (L19) — raycast(ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, maxDist: numbe
+  [m] sphereHitsStatic (L21) — sphereHitsStatic(x: number, y: number, z: number, r: number): boolean;
+  [const] SIZE (L24)
+  [const] HALF (L25)
+  [const] MASTER_SEED (L26)
+  [fn] makeGridTexture (L28) — function makeGridTexture(): THREE.CanvasTexture {
+  [const] c (L29)
+  [const] g (L31)
+  [const] tex (L41)
+  [fn] addStaticBox (L49) — function addStaticBox(physics: PhysicsSys, statics: AABB[], minx: number, miny: number, minz: nu
+  [fn] rayAABB (L59) — function rayAABB(
+  [const] tt (L69)
+  [fn] buildArena (L94) — export function buildArena(scene: THREE.Scene, physics: PhysicsSys, mats: Mats, isMobile: boolea
+  [const] statics (L97)
+  [const] groundGeo (L100)
+  [const] groundMat (L101)
+  [const] ground (L104)
+  [const] hemi (L111)
+  [const] sun (L113)
+  [const] sc (L117)
+  [const] wallGeo (L126)
+  [const] z (L127)
+  [const] w (L128)
+  [const] wallGeoZ (L134)
+  [const] x (L135)
+  [const] streams (L144)
+  [const] rng (L145)
+  [const] pillarSpots (L146)
+  [const] N (L147)
+
+## game/dressing.ts
+  [const] BOX_COUNT (L10)
+  [const] PYR_COUNT (L11)
+  [fn] scatterDressing (L13) — export function scatterDressing(
+  [const] rng (L18)
+  [const] m4 (L19)
+  [const] q (L20)
+  [const] e (L21)
+  [const] v (L22)
+  [const] s (L23)
+  [const] col (L24)
+  [const] clearOf (L26)
+  [const] place (L35)
+  [const] boxGeo (L45)
+  [const] boxes (L46)
+  [var] i (L47)
+  [const] p (L48)
+  [const] w (L49)
+  [const] pyrGeo (L65)
+  [const] pyrs (L66)
+  [const] sc (L69)
+
+## game/enemy.ts
+  [const] ENEMY_TUNING (L19)
+  [type] EnemyState (L39)
+  [if] EnemyHooks (L41) — export interface EnemyHooks {
+  [prototype] onPlayerDamage (L42) — onPlayerDamage: (dmg: number, x: number, z: number) => void;
+  [prototype] onKill (L43) — onKill: (x: number, y: number, z: number) => void;
+  [prototype] onDrop (L44) — onDrop: (x: number, z: number) => void;
+  [if] AIComp (L47) — interface AIComp { brain: 'chaser'; state: EnemyState; t: number; target: number }
+  [prototype] brain (L47) — interface AIComp { brain: 'chaser'; state: EnemyState; t: number; target: number }
+  [prototype] state (L47) — interface AIComp { brain: 'chaser'; state: EnemyState; t: number; target: number }
+  [prototype] t (L47) — interface AIComp { brain: 'chaser'; state: EnemyState; t: number; target: number }
+  [prototype] target (L47) — interface AIComp { brain: 'chaser'; state: EnemyState; t: number; target: number }
+  [if] EnemyRec (L49) — interface EnemyRec {
+  [prototype] id (L50) — id: number;
+  [prototype] bodyId (L51) — bodyId: number;
+  [prototype] torsoMat (L52) — torsoMat: THREE.MeshStandardMaterial;
+  [prototype] group (L53) — group: THREE.Group;
+  [prototype] wp (L54) — wp: number;
+  [prototype] flash (L55) — flash: number;
+  [prototype] atkCd (L56) — atkCd: number;
+  [prototype] respawnT (L57) — respawnT: number;
+  [prototype] vx (L58) — vx: number;
+  [prototype] vz (L59) — vz: number;
+  [const] REST_Y (L62)
+  [const] _pos (L63)
+  [cls] Enemies (L65) — export class Enemies {
+  [prototype] list (L66) — private list: EnemyRec[] = [];
+  [prototype] waypoints (L67) — private waypoints: Array<{ x: number; z: number }> = [];
+  [prototype] rng (L68) — private rng: () => number;
+  [m] constructor (L70) — constructor(
+  [prototype] world (L71) — private world: World,
+  [prototype] physics (L72) — private physics: PhysicsSys,
+  [prototype] scene (L73) — private scene: THREE.Scene,
+  [m] spawn (L85) — spawn(x: number, z: number): number {
+  [m] spawnInitial (L111) — spawnInitial(): void {
+  [m] clear (L119) — clear(): void {
+  [m] aliveCount (L129) — aliveCount(): number {
+  [m] damage (L135) — damage(id: number, dmg: number, kx: number, kz: number): void {
+  [m] kill (L154) — private kill(rec: EnemyRec, x: number, z: number): void {
+  [m] update (L166) — update(dt: number, px: number, pz: number, playerAlive: boolean): void {
+  [m] serialize (L301) — serialize(): Array<{ x: number; z: number; hp: number; state: EnemyState; wp: number }> {
+
+## game/hud.ts
+  [const] CSS (L7)
+  [cls] HUD (L27) — export class HUD {
+  [prototype] hpBar (L28) — private hpBar: HTMLElement;
+  [prototype] scoreEl (L29) — private scoreEl: HTMLElement;
+  [prototype] enemyEl (L30) — private enemyEl: HTMLElement;
+  [prototype] muteBtn (L31) — private muteBtn: HTMLButtonElement;
+  [prototype] vig (L32) — private vig: HTMLElement;
+  [prototype] vigT (L33) — private vigT = 0;
+  [prototype] lastHp (L34) — private lastHp = -1;
+  [prototype] lastScore (L35) — private lastScore = -1;
+  [prototype] lastEnemies (L36) — private lastEnemies = -1;
+  [prototype] muted (L37) — private muted = false;
+  [m] constructor (L39) — constructor(
+  [prototype] audio (L41) — private audio: AudioSys,
+  [prototype] onSave (L42) — private onSave: () => void,
+  [prototype] noteUiClick (L43) — private noteUiClick: () => void,
+  [m] setHealth (L87) — setHealth(hp: number, max: number): void {
+  [m] setScore (L95) — setScore(s: number): void {
+  [m] setEnemies (L101) — setEnemies(n: number): void {
+  [m] flashDamage (L107) — flashDamage(): void {
+  [m] update (L112) — update(dt: number): void {
+
+## game/juice.ts
+  [const] MAX_PARTICLES (L7)
+  [const] _off (L9)
+  [cls] Juice (L11) — export class Juice {
+  [prototype] trauma (L13) — trauma = 0;
+  [prototype] points (L15) — private points: THREE.Points;
+  [prototype] pos (L16) — private pos: Float32Array;
+  [prototype] col (L17) — private col: Float32Array;
+  [prototype] vel (L18) — private vel: Float32Array; \/\/ 3 per particle
+  [prototype] life (L19) — private life: Float32Array;
+  [prototype] maxLife (L20) — private maxLife: Float32Array;
+  [prototype] cursor (L21) — private cursor = 0;
+  [prototype] geo (L22) — private geo: THREE.BufferGeometry;
+  [m] constructor (L24) — constructor(scene: THREE.Scene) {
+  [m] shake (L49) — shake(amount: number): void {
+  [m] update (L54) — update(dt: number): void {
+  [m] if (L83) — if (anyAlive) {
+  [const] s (L92)
+  [const] t (L94)
+  [var] n (L105)
+  [const] i (L106)
+  [const] i3 (L108)
+  [const] a (L109)
+  [const] up (L110)
+  [const] sp (L111)
+  [const] g (L118)
+
+## game/pickups.ts
+  [const] POOL (L10)
+  [const] PICKUP_RADIUS (L11)
+  [const] _m4 (L13)
+  [const] _q (L14)
+  [const] _e (L15)
+  [const] _v (L16)
+  [const] _s (L17)
+  [if] PickupComp (L19) — interface PickupComp { kind: 'health'; amount: number; taken: boolean }
+  [prototype] kind (L19) — interface PickupComp { kind: 'health'; amount: number; taken: boolean }
+  [prototype] amount (L19) — interface PickupComp { kind: 'health'; amount: number; taken: boolean }
+  [prototype] taken (L19) — interface PickupComp { kind: 'health'; amount: number; taken: boolean }
+  [if] PickupState (L21) — export interface PickupState { x: number; z: number; amount: number; taken: boolean }
+  [prototype] x (L21) — export interface PickupState { x: number; z: number; amount: number; taken: boolean }
+  [prototype] z (L21) — export interface PickupState { x: number; z: number; amount: number; taken: boolean }
+  [cls] Pickups (L23) — export class Pickups {
+  [prototype] ids (L24) — private ids: number[] = [];
+  [prototype] mesh (L25) — private mesh: THREE.InstancedMesh;
+  [prototype] time (L26) — private time = 0;
+  [m] constructor (L28) — constructor(scene: THREE.Scene, private world: World, mats: Mats) {
+  [m] spawn (L41) — spawn(x: number, z: number, amount = 25): void {
+  [m] clear (L60) — clear(): void {
+  [m] update (L66) — update(dt: number, px: number, pz: number, onPickup: (amount: number, x: number, z: number) =>
+  [prototype] slot (L79) — let slot = 0;
+  [m] for (L80) — for (const id of this.ids) {
+  [prototype] this (L94) — this.mesh.instanceMatrix.needsUpdate = true;
+  [const] out (L98)
+  [const] id (L99)
+  [const] p (L100)
+  [const] t (L101)
+  [const] s (L109)
+
+## game/player.ts
+  [const] WALK (L18)
+  [const] SPRINT (L19)
+  [const] JUMP_VEL (L20)
+  [const] COYOTE (L21)
+  [const] BUFFER (L22)
+  [const] REST_Y (L23)
+  [const] CAM_DIST (L24)
+  [const] CAM_HEIGHT (L25)
+  [const] LOOK_SENS (L26)
+  [const] FOV_BASE (L27)
+  [const] FOV_SPRINT (L28)
+  [const] _fwd (L30)
+  [const] _wish (L31)
+  [const] _camPos (L32)
+  [const] _target (L33)
+  [const] _dir (L34)
+  [const] _p (L35)
+  [fn] isTouchDevice (L37) — export function isTouchDevice(): boolean {
+  [fn] requestPointerLock (L43) — export function requestPointerLock(canvas: HTMLCanvasElement): void {
+  [const] r (L45)
+  [cls] Player (L52) — export class Player {
+  [prototype] id (L53) — readonly id: number;
+  [prototype] suppressUntil (L55) — suppressUntil = 0;
+  [prototype] onFire (L56) — onFire: (fx: number, fy: number, fz: number, dx: number, dy: number, dz: number) => void = ()
+  [prototype] onLand (L57) — onLand: () => void = () => {};
+  [prototype] onHurt (L58) — onHurt: (hp: number) => void = () => {};
+  [prototype] onDie (L59) — onDie: () => void = () => {};
+  [prototype] bodyId (L61) — private bodyId = -1;
+  [prototype] yaw (L62) — private yaw = Math.PI;
+  [prototype] pitch (L63) — private pitch = -0.18;
+  [prototype] coyote (L64) — private coyote = 0;
+  [prototype] buffer (L65) — private buffer = 0;
+  [prototype] fireCd (L66) — private fireCd = 0;
+  [prototype] fov (L67) — private fov = FOV_BASE;
+  [prototype] dip (L68) — private dip = 0;
+  [prototype] wasGrounded (L69) — private wasGrounded = true;
+  [prototype] vx (L70) — private vx = 0;
+  [prototype] vz (L71) — private vz = 0;
+  [prototype] dragging (L72) — private dragging = false;
+  [prototype] lastPX (L73) — private lastPX = 0;
+
+## game/projectiles.ts
+  [const] POOL (L11)
+  [const] SUBSTEPS (L12)
+  [const] _m4 (L14)
+  [const] _v (L15)
+  [const] _s1 (L16)
+  [const] _zeroQ (L17)
+  [if] ProjectileHooks (L19) — export interface ProjectileHooks {
+  [prototype] onHitEnemy (L20) — onHitEnemy: (id: number, dmg: number, x: number, y: number, z: number) => void;
+  [prototype] onHitWorld (L21) — onHitWorld: (x: number, y: number, z: number) => void;
+  [cls] Projectiles (L24) — export class Projectiles {
+  [prototype] px (L25) — private px = new Float32Array(POOL);
+  [prototype] py (L26) — private py = new Float32Array(POOL);
+  [prototype] pz (L27) — private pz = new Float32Array(POOL);
+  [prototype] vx (L28) — private vx = new Float32Array(POOL);
+  [prototype] vy (L29) — private vy = new Float32Array(POOL);
+  [prototype] vz (L30) — private vz = new Float32Array(POOL);
+  [prototype] life (L31) — private life = new Float32Array(POOL);
+  [prototype] dmg (L32) — private dmg = new Float32Array(POOL);
+  [prototype] active (L33) — private active = new Uint8Array(POOL);
+  [prototype] mesh (L34) — private mesh: THREE.InstancedMesh;
+  [prototype] activeCount (L35) — activeCount = 0;
+  [m] constructor (L37) — constructor(
+  [m] fire (L60) — fire(fx: number, fy: number, fz: number, dx: number, dy: number, dz: number, speed: number, da
+  [m] clear (L73) — clear(): void {
+  [m] update (L78) — update(dt: number): void {
+
+## game/screens.ts
+  [const] CSS (L5)
+  [if] ScreenCallbacks (L27) — export interface ScreenCallbacks {
+  [prototype] onStart (L28) — onStart: () => void;
+  [prototype] onResume (L29) — onResume: () => void;
+  [prototype] onRestart (L30) — onRestart: () => void;
+  [prototype] onSave (L31) — onSave: () => void;
+  [prototype] noteUiClick (L32) — noteUiClick: () => void;
+  [cls] Screens (L35) — export class Screens {
+  [prototype] title (L36) — private title: HTMLElement;
+  [prototype] pause (L37) — private pause: HTMLElement;
+  [prototype] over (L38) — private over: HTMLElement;
+  [prototype] overScore (L39) — private overScore: HTMLElement;
+  [m] constructor (L41) — constructor(uiRoot: HTMLElement, cb: ScreenCallbacks) {
+  [m] addContinueButton (L106) — addContinueButton(onContinue: () => void): void {
+  [m] showTitle (L115) — showTitle(): void {
+  [m] showPause (L121) — showPause(): void {
+  [m] hidePause (L125) — hidePause(): void {
+  [m] hideTitle (L129) — hideTitle(): void {
+  [m] titleVisible (L133) — get titleVisible(): boolean {
+  [m] showGameOver (L137) — showGameOver(score: number): void {
+  [m] hideGameOver (L142) — hideGameOver(): void {
+
+## game/sim.ts
+  [if] TransformFull (L13) — export interface TransformFull extends TransformC {
+  [prototype] position (L14) — position: { x: number; y: number; z: number };
+  [if] HealthFull (L17) — export interface HealthFull extends HealthC {
+  [prototype] current (L18) — current: number;
+  [prototype] max (L19) — max: number;
+  [fn] makeTransform (L22) — export function makeTransform(x: number, y: number, z: number, ry = 0): TransformFull {
+  [fn] writePos (L30) — export function writePos(t: TransformFull, x: number, y: number, z: number): void {
+  [fn] makeHealth (L35) — export function makeHealth(hp: number, maxHp: number): HealthFull {
+  [fn] getHp (L40) — export function getHp(h: HealthFull): number {
+  [fn] setHp (L45) — export function setHp(h: HealthFull, v: number): void {
+  [fn] addHp (L51) — export function addHp(h: HealthFull, d: number): number {
+  [const] v (L52)
+
+## gfx/character.ts
+  [const] GEO (L10)
+  [fn] mesh (L21) — function mesh(geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number):
+  [const] m (L22)
+  [fn] buildPlayerMesh (L28) — export function buildPlayerMesh(m: Mats): THREE.Group {
+  [const] g (L29)
+  [const] armL (L33)
+  [const] armR (L34)
+  [const] belt (L40)
+  [if] EnemyMesh (L45) — export interface EnemyMesh {
+  [prototype] group (L46) — group: THREE.Group;
+  [prototype] torsoMesh (L47) — torsoMesh: THREE.Mesh;
+  [fn] buildEnemyMesh (L50) — export function buildEnemyMesh(m: Mats): EnemyMesh {
+  [const] torsoMesh (L53)
+  [const] core (L55)
+
+## gfx/materials.ts
+  [if] Mats (L6) — export interface Mats {
+  [prototype] ground (L7) — ground: THREE.MeshStandardMaterial;
+  [prototype] wall (L8) — wall: THREE.MeshStandardMaterial;
+  [prototype] pillar (L9) — pillar: THREE.MeshStandardMaterial;
+  [prototype] propA (L10) — propA: THREE.MeshStandardMaterial;
+  [prototype] propB (L11) — propB: THREE.MeshStandardMaterial;
+  [prototype] playerBody (L12) — playerBody: THREE.MeshStandardMaterial;
+  [prototype] playerTrim (L13) — playerTrim: THREE.MeshStandardMaterial;
+  [prototype] enemyBody (L14) — enemyBody: THREE.MeshStandardMaterial;
+  [prototype] enemyCore (L15) — enemyCore: THREE.MeshStandardMaterial;
+  [prototype] projectile (L16) — projectile: THREE.MeshStandardMaterial;
+  [prototype] pickup (L17) — pickup: THREE.MeshStandardMaterial;
+  [fn] std (L20) — function std(color: string, roughness = 0.8, extra: Partial<THREE.MeshStandardMaterialParameters
+  [fn] createMaterials (L24) — export function createMaterials(): Mats {

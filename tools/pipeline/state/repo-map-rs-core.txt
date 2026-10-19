@@ -1,0 +1,527 @@
+# repo-map: /home/hatch/workspace/keelcode/backends/rs-core/src
+# 20 files (depth<=3, showing first 400)
+
+bin/
+render/
+systems/
+
+# symbols
+
+## audio.rs
+  [if] AudioDriver (L7) — pub trait AudioDriver {
+  [P] play (L8)
+  [st] NullAudio (L13) — pub struct NullAudio;
+  [cls] NullAudio (L15) — impl AudioDriver for NullAudio {
+
+## components.rs
+  [ns] vec_serde (L18)
+  [st] Vec3Map (L24) — struct Vec3Map {
+  [st] QuatMap (L31) — struct QuatMap {
+  [ns] dvec3 (L38)
+  [ns] dquat (L55)
+  [st] Transform (L76) — pub struct Transform {
+  [m] position (L78) — pub position: DVec3,
+  [m] rotation (L80) — pub rotation: DQuat,
+  [m] scale (L82) — pub scale: DVec3,
+  [st] Velocity (L87) — pub struct Velocity {
+  [m] linear (L89) — pub linear: DVec3,
+  [m] angular (L91) — pub angular: DVec3,
+  [st] Health (L96) — pub struct Health {
+  [m] current (L97) — pub current: f64,
+  [m] max (L98) — pub max: f64,
+  [enum] ShapeKind (L104)
+  [enumerator] Box (L105)
+  [enumerator] Sphere (L106)
+  [enumerator] Capsule (L107)
+  [st] Collider (L113) — pub struct Collider {
+  [m] shape (L114) — pub shape: ShapeKind,
+  [m] size (L116) — pub size: Vec<f64>,
+  [m] is_trigger (L118) — pub is_trigger: bool,
+  [st] Renderable (L124) — pub struct Renderable {
+  [m] mesh_ref (L125) — pub mesh_ref: String,
+  [m] material_ref (L126) — pub material_ref: String,
+  [m] visible (L127) — pub visible: bool,
+  [st] Script (L133) — pub struct Script {
+  [m] behavior_id (L134) — pub behavior_id: String,
+  [m] params (L135) — pub params: serde_json::Value,
+  [st] InputMarker (L140) — pub struct InputMarker {
+  [m] marker (L141) — pub marker: bool,
+  [st] AIComp (L147) — pub struct AIComp {
+  [m] brain_id (L148) — pub brain_id: String,
+  [m] blackboard (L149) — pub blackboard: serde_json::Value,
+  [st] Lifetime (L154) — pub struct Lifetime {
+  [m] remaining (L155) — pub remaining: f64,
+  [st] PickupComp (L161) — pub struct PickupComp {
+  [m] effect_id (L162) — pub effect_id: String,
+  [m] value (L163) — pub value: f64,
+
+## demo.rs
+  [const] MASTER_SEED (L72)
+  [const] ARENA_HALF (L73)
+  [st] Stream (L85) — pub struct Stream {
+  [m] state (L86) — state: i32,
+  [cls] Stream (L89) — impl Stream {
+  [P] new (L90)
+  [P] next (L95)
+  [P] state (L105)
+  [P] set_state (L109)
+  [st] AABB (L120) — pub struct AABB {
+  [m] minx (L121) — minx: f64,
+  [m] miny (L122) — miny: f64,
+  [m] minz (L123) — minz: f64,
+  [m] maxx (L124) — maxx: f64,
+  [m] maxy (L125) — maxy: f64,
+  [m] maxz (L126) — maxz: f64,
+  [fn] ray_aabb (L131) — pub fn ray_aabb(
+  [fn] raycast_statics (L195) — pub fn raycast_statics(
+  [fn] sphere_hits_static (L216) — pub fn sphere_hits_static(x: f64, y: f64, z: f64, r: f64, statics: &[AABB]) -> bool {
+  [fn] add_static_box (L229) — fn add_static_box(
+  [enum] EventKind (L267)
+  [enumerator] Kill (L268)
+  [enumerator] Pickup (L269)
+  [enumerator] Damage (L270)
+  [enumerator] Death (L271)
+  [st] Event (L275) — pub struct Event {
+  [m] tick (L276) — pub tick: u64,
+  [m] kind (L277) — pub kind: EventKind,
+  [m] detail (L278) — pub detail: Value,
+  [enum] Mode (L283)
+  [enumerator] Playing (L284)
+  [enumerator] Paused (L285)
+  [enumerator] Over (L286)
+  [enum] RenderKind (L291)
+  [enumerator] Player (L292)
+  [enumerator] Enemy (L293)
+  [enumerator] Projectile (L294)
+  [enumerator] Pillar (L296)
+  [enumerator] Floor (L297)
+  [enumerator] Wall (L298)
+
+## ecs.rs
+  [type] Entity (L21)
+  [enum] ComponentId (L25)
+  [enumerator] Transform (L26)
+  [enumerator] Velocity (L27)
+  [enumerator] Health (L28)
+  [enumerator] Collider (L29)
+  [enumerator] Renderable (L30)
+  [enumerator] Script (L31)
+  [enumerator] Input (L32)
+  [enumerator] AI (L33)
+  [enumerator] Lifetime (L34)
+  [enumerator] Pickup (L35)
+  [enumerator] Projectile (L36)
+  [enumerator] Player (L37)
+  [enumerator] Enemy (L38)
+  [cls] ComponentId (L41) — impl ComponentId {
+  [P] name (L44)
+  [if] Component (L64) — pub trait Component: 'static {
+  [P] id (L65)
+  [M] impl_component (L68)
+  [st] World (L94) — pub struct World {
+  [m] transform (L95) — transform: Vec<Option<Transform>>,
+  [m] velocity (L96) — velocity: Vec<Option<Velocity>>,
+  [m] health (L97) — health: Vec<Option<Health>>,
+  [m] collider (L98) — collider: Vec<Option<Collider>>,
+  [m] renderable (L99) — renderable: Vec<Option<Renderable>>,
+  [m] script (L100) — script: Vec<Option<Script>>,
+  [m] input (L101) — input: Vec<Option<InputMarker>>,
+  [m] ai (L102) — ai: Vec<Option<AIComp>>,
+  [m] lifetime (L103) — lifetime: Vec<Option<Lifetime>>,
+  [m] pickup (L104) — pickup: Vec<Option<PickupComp>>,
+  [m] projectile (L105) — projectile: Vec<Option<ProjectileComp>>,
+  [m] player (L106) — player: Vec<Option<Player>>,
+  [m] enemy (L107) — enemy: Vec<Option<Enemy>>,
+  [m] alive (L109) — alive: Vec<bool>,
+  [m] pending_spawn (L111) — pending_spawn: Vec<bool>,
+  [m] pending_despawn (L113) — pending_despawn: Vec<bool>,
+  [m] spawn_queue (L115) — spawn_queue: Vec<Entity>,
+  [m] despawn_queue (L117) — despawn_queue: Vec<Entity>,
+  [m] next_id (L119) — next_id: Entity,
+
+## input.rs
+  [st] ActionState (L13) — struct ActionState {
+  [m] down (L14) — down: bool,
+  [m] prev (L15) — prev: bool,
+  [m] pressed (L16) — pressed: bool,
+  [m] released (L17) — released: bool,
+  [st] InputEvent (L21) — struct InputEvent {
+  [m] tick (L22) — tick: u64,
+  [m] action (L23) — action: String,
+  [st] InputSys (L28) — pub struct InputSys {
+  [m] actions (L29) — actions: BTreeMap<String, ActionState>,
+  [m] axes (L30) — axes: BTreeMap<String, (String, String)>, \/\/ name -> (neg, pos)
+  [m] events (L31) — events: Vec<InputEvent>,
+  [m] cursor (L32) — cursor: usize, \/\/ first unprocessed event; events are tick-sorted
+  [cls] InputSys (L35) — impl InputSys {
+  [P] new (L36)
+  [P] define_action (L45)
+  [P] define_axis (L50)
+  [P] load_script (L57)
+  [P] update (L97)
+  [P] is_down (L116)
+  [P] set_action_state (L126)
+  [P] pressed (L134)
+  [P] released (L139)
+  [P] axis (L144)
+  [P] default (L155)
+
+## lib.rs
+  [ns] audio (L16)
+  [ns] components (L17)
+  [ns] demo (L18)
+  [ns] ecs (L19)
+  [ns] input (L20)
+  [ns] physics (L21)
+  [ns] render (L22)
+  [ns] rng (L23)
+  [ns] save (L24)
+  [ns] sim_loop (L25)
+  [ns] systems (L26)
+
+## main.rs
+  [st] Args (L17) — struct Args {
+  [m] seed (L20) — seed: u32,
+  [m] input (L23) — input: PathBuf,
+  [m] ticks (L26) — ticks: u64,
+  [fn] main (L29) — fn main() {
+
+## physics.rs
+  [st] BodyOpts (L29) — pub struct BodyOpts {
+  [m] kind (L30) — pub kind: ShapeKind,
+  [m] hx (L31) — pub hx: f64,
+  [m] hy (L32) — pub hy: f64,
+  [m] hz (L33) — pub hz: f64,
+  [m] pos (L34) — pub pos: DVec3,
+  [m] is_static (L35) — pub is_static: bool,
+  [const] GRAVITY (L39)
+  [fn] to_vec (L42) — fn to_vec(p: DVec3) -> Vector<Real> {
+  [fn] to_dvec (L47) — fn to_dvec(v: &Vector<Real>) -> DVec3 {
+  [st] PhysicsSys (L51) — pub struct PhysicsSys {
+  [m] pipeline (L52) — pipeline: PhysicsPipeline,
+  [m] islands (L53) — islands: IslandManager,
+  [m] broad_phase (L54) — broad_phase: BroadPhaseMultiSap,
+  [m] narrow_phase (L55) — narrow_phase: NarrowPhase,
+  [m] bodies (L56) — bodies: RigidBodySet,
+  [m] colliders (L57) — colliders: ColliderSet,
+  [m] impulse_joints (L58) — impulse_joints: ImpulseJointSet,
+  [m] multibody_joints (L59) — multibody_joints: MultibodyJointSet,
+  [m] ccd_solver (L60) — ccd_solver: CCDSolver,
+  [m] query_pipeline (L61) — query_pipeline: QueryPipeline,
+  [m] gravity (L62) — gravity: Vector<Real>,
+  [m] ids (L63) — ids: BTreeMap<u32, RigidBodyHandle>,
+  [m] next_id (L64) — next_id: u32,
+  [cls] PhysicsSys (L67) — impl Default for PhysicsSys {
+  [P] default (L68)
+  [P] new (L74)
+  [P] step (L93)
+  [P] add_body (L129)
+  [P] remove_body (L153)
+  [P] get_position (L166)
+  [P] set_velocity (L173)
+  [P] set_kinematic_position (L182)
+
+## rng.rs
+  [fn] mulberry32 (L12) — pub fn mulberry32(seed: u32) -> impl FnMut() -> f64 {
+  [fn] hash_seed (L28) — pub fn hash_seed(master: u32, salt: &str) -> u32 {
+
+## save.rs
+  [const] CURRENT_VERSION (L14)
+  [type] Migration (L17)
+  [fn] migrations (L20) — fn migrations() -> BTreeMap<u32, Migration> {
+  [st] SaveData (L26) — pub struct SaveData {
+  [m] engine (L28) — pub engine: String,
+  [m] format_version (L29) — pub format_version: u32,
+  [m] seed (L30) — pub seed: u32,
+  [m] tick (L31) — pub tick: u64,
+  [m] components (L33) — pub components: BTreeMap<u32, BTreeMap<String, serde_json::Value>>,
+  [m] score (L35) — pub score: u64,
+  [m] extra (L38) — pub extra: BTreeMap<String, serde_json::Value>,
+  [st] Envelope (L43) — struct Envelope {
+  [m] sum (L44) — sum: u32,
+  [m] data (L45) — data: String,
+  [fn] fnv1a (L49) — fn fnv1a(bytes: &[u8]) -> u32 {
+  [st] SaveSys (L58) — pub struct SaveSys {
+  [m] dir (L59) — dir: PathBuf,
+  [m] namespace (L60) — namespace: String,
+  [cls] SaveSys (L63) — impl SaveSys {
+  [P] new (L64)
+  [P] live_name (L71)
+  [P] tmp_name (L75)
+  [P] prefix (L79)
+  [P] save (L84)
+  [P] load (L114)
+  [P] list (L137)
+  [P] remove (L156)
+
+## sim_loop.rs
+  [const] STEP (L26)
+  [const] MAX_STEPS (L28)
+  [const] MAX_FRAME (L30)
+  [enum] Phase (L34)
+  [enumerator] PreUpdate (L35)
+  [enumerator] Update (L36)
+  [enumerator] PostUpdate (L37)
+  [enumerator] Render (L38)
+  [st] FrameCtx (L43) — pub struct FrameCtx {
+  [m] dt (L45) — pub dt: f64,
+  [m] tick (L47) — pub tick: u64,
+  [m] alpha (L49) — pub alpha: f64,
+  [m] time_scale (L51) — pub time_scale: f64,
+  [type] Handler (L54)
+  [st] GameLoop (L57) — pub struct GameLoop {
+  [m] handlers (L58) — handlers: [Vec<Handler>; 4],
+  [m] ctx (L59) — ctx: FrameCtx,
+  [m] accumulator (L61) — accumulator: f64,
+  [m] last_ms (L62) — last_ms: Option<f64>,
+  [m] paused (L63) — paused: bool,
+  [m] scale (L64) — scale: f64,
+  [m] hit_stop_ms (L65) — hit_stop_ms: f64,
+  [m] shed_count (L66) — shed_count: u64,
+  [cls] GameLoop (L69) — impl GameLoop {
+  [P] new (L70)
+  [P] on (L90)
+  [P] run_phase (L94)
+  [P] run_sim_step (L103)
+  [P] frame (L115)
+  [P] step (L176)
+  [P] tick (L182)
+  [P] shed_count (L186)
+  [P] set_paused (L192)
+  [P] paused (L199)
+  [P] set_time_scale (L204)
+  [P] hit_stop (L211)
+  [P] default (L219)
+
+## bin/keel-desktop.rs
+  [st] Args (L34) — struct Args {
+  [m] seed (L37) — seed: u32,
+  [enum] AppState (L41)
+  [enumerator] Title (L43)
+  [enumerator] Playing (L44)
+  [enumerator] Paused (L45)
+  [enumerator] Over (L46)
+  [cls] AppState (L49) — impl AppState {
+  [P] overlay (L50)
+  [fn] key_action (L60) — fn key_action(code: KeyCode) -> Option<&'static str> {
+  [const] ACTIONS (L72)
+  [st] App (L83) — struct App {
+  [m] window (L84) — window: Option<Arc<Window>>,
+  [m] renderer (L85) — renderer: Option<Renderer>,
+  [m] demo (L86) — demo: Demo,
+  [m] state (L87) — state: AppState,
+  [m] t0 (L89) — t0: Instant,
+  [m] frames (L90) — frames: u32,
+  [m] fps_window_start (L91) — fps_window_start: f64,
+  [m] fps (L92) — fps: u32,
+  [m] last_render_error (L93) — last_render_error: Option<String>,
+  [cls] App (L96) — impl App {
+  [P] new (L97)
+  [P] now_ms (L114)
+  [P] clear_actions (L120)
+  [P] set_state (L126)
+  [P] start_playing (L132)
+  [P] toggle_pause (L138)
+  [P] update_title (L146)
+  [P] tick_frame (L156)
+  [P] resumed (L212)
+  [P] window_event (L237)
+  [P] about_to_wait (L292)
+  [fn] main (L300) — fn main() {
+
+## render/mod.rs
+  [ns] renderer (L13)
+  [ns] window (L14)
+  [const] MAX_INSTANCES (L22)
+  [st] GpuInstance (L28) — pub struct GpuInstance {
+  [m] model (L29) — pub model: [[f32; 4]; 4], \/\/ column-major mat4
+  [m] color (L30) — pub color: [f32; 4],
+  [fn] instance (L33) — fn instance(pos: DVec3, ry: f64, sx: f64, sy: f64, sz: f64, color: [f32; 3]) -> GpuInstance {
+  [fn] build_instances (L52) — pub fn build_instances(snap: &RenderSnapshot) -> Vec<GpuInstance> {
+  [fn] view_proj_matrix (L103) — pub fn view_proj_matrix(cam_pos: DVec3, cam_forward: DVec3, aspect: f32) -> [[f32; 4]; 4] {
+  [const] OPENGL_TO_WGPU (L118)
+  [ns] tests (L128)
+  [fn] snapshot (L132) — fn snapshot(kinds: &[(RenderKind, DVec3)]) -> RenderSnapshot {
+  [fn] one_instance_per_item_with_finite_matrices (L150) — fn one_instance_per_item_with_finite_matrices() {
+  [fn] wall_heuristic_orients_along_the_right_axis (L174) — fn wall_heuristic_orients_along_the_right_axis() {
+  [fn] floor_slab_covers_the_arena (L199) — fn floor_slab_covers_the_arena() {
+  [fn] view_proj_maps_forward_point_into_ndc (L211) — fn view_proj_maps_forward_point_into_ndc() {
+  [fn] view_proj_degenerate_forward_does_not_panic (L232) — fn view_proj_degenerate_forward_does_not_panic() {
+
+## render/renderer.rs
+  [const] SCENE_SHADER (L21)
+  [const] OVERLAY_SHADER (L61)
+  [st] MeshVertex (L79) — struct MeshVertex {
+  [m] pos (L80) — pos: [f32; 3],
+  [m] normal (L81) — normal: [f32; 3],
+  [fn] box_mesh (L85) — fn box_mesh() -> (Vec<MeshVertex>, Vec<u32>) {
+  [st] Renderer (L174) — pub struct Renderer {
+  [m] device (L175) — device: wgpu::Device,
+  [m] queue (L176) — queue: wgpu::Queue,
+  [m] surface (L177) — surface: wgpu::Surface<'static>,
+  [m] config (L178) — config: wgpu::SurfaceConfiguration,
+  [m] depth_view (L179) — depth_view: wgpu::TextureView,
+  [m] scene_pipeline (L180) — scene_pipeline: wgpu::RenderPipeline,
+  [m] overlay_pipeline (L181) — overlay_pipeline: wgpu::RenderPipeline,
+  [m] scene_bind_group (L182) — scene_bind_group: wgpu::BindGroup,
+  [m] overlay_bind_group (L183) — overlay_bind_group: wgpu::BindGroup,
+  [m] cam_buffer (L184) — cam_buffer: wgpu::Buffer,
+  [m] overlay_buffer (L185) — overlay_buffer: wgpu::Buffer,
+  [m] mesh_vertex_buffer (L186) — mesh_vertex_buffer: wgpu::Buffer,
+  [m] mesh_index_buffer (L187) — mesh_index_buffer: wgpu::Buffer,
+  [m] instance_buffer (L188) — instance_buffer: wgpu::Buffer,
+  [cls] Renderer (L191) — impl Renderer {
+  [P] new (L194)
+  [P] depth_texture (L421)
+  [P] resize (L439)
+  [P] render (L452)
+
+## render/window.rs
+  [enum] OverlayKind (L17)
+  [enumerator] None (L18)
+  [enumerator] Title (L19)
+  [enumerator] Paused (L20)
+  [enumerator] GameOver (L21)
+  [cls] OverlayKind (L24) — impl OverlayKind {
+  [P] rgba (L26)
+  [P] label (L35)
+  [fn] create_window (L47) — pub fn create_window(event_loop: &ActiveEventLoop, title: &str) -> Result<Arc<Window>, String> {
+
+## systems/ai.rs
+  [const] REST_Y (L33)
+  [st] EnemyTuning (L37) — pub struct EnemyTuning {
+  [m] hp (L38) — pub hp: f64,
+  [m] walk_speed (L39) — pub walk_speed: f64,
+  [m] patrol_speed (L40) — pub patrol_speed: f64,
+  [m] damage (L41) — pub damage: f64,
+  [m] attack_range (L42) — pub attack_range: f64,
+  [m] attack_cooldown (L43) — pub attack_cooldown: f64,
+  [m] aggro_range (L44) — pub aggro_range: f64,
+  [m] deaggro_range (L45) — pub deaggro_range: f64,
+  [m] reaction_delay (L46) — pub reaction_delay: f64,
+  [m] windup_time (L47) — pub windup_time: f64,
+  [m] strike_time (L48) — pub strike_time: f64,
+  [m] recover_time (L49) — pub recover_time: f64,
+  [m] separation_radius (L50) — pub separation_radius: f64,
+  [m] separation_push (L51) — pub separation_push: f64,
+  [m] count (L52) — pub count: usize,
+  [m] respawn_delay (L53) — pub respawn_delay: f64,
+  [m] drop_chance (L54) — pub drop_chance: f64,
+  [m] waypoints (L55) — pub waypoints: usize,
+  [const] ENEMY_TUNING (L58)
+  [enum] EnemyState (L81)
+  [enumerator] Idle (L82)
+  [enumerator] Patrol (L83)
+  [enumerator] Chase (L84)
+  [enumerator] Windup (L85)
+  [enumerator] Strike (L86)
+  [enumerator] Recover (L87)
+  [st] EnemyRec (L93) — pub struct EnemyRec {
+  [m] entity (L94) — pub entity: Entity,
+  [m] body (L95) — pub body: Option<u32>,
+  [m] wp (L96) — pub wp: usize,
+  [m] state (L97) — pub state: EnemyState,
+  [m] t (L98) — pub t: f64,
+  [m] atk_cd (L99) — pub atk_cd: f64,
+  [m] respawn_t (L100) — pub respawn_t: f64,
+  [m] vx (L101) — pub vx: f64,
+  [m] vz (L102) — pub vz: f64,
+  [m] ry (L103) — pub ry: f64,
+  [enum] AiHook (L109)
+
+## systems/combat.rs
+  [const] PROJ_POOL (L27)
+  [const] PROJ_SUBSTEPS (L28)
+  [const] PROJ_RADIUS (L29)
+  [const] PICKUP_POOL (L30)
+  [const] PICKUP_RADIUS (L31)
+  [st] ProjSlot (L34) — pub struct ProjSlot {
+  [m] active (L35) — pub active: bool,
+  [m] x (L36) — pub x: f64,
+  [m] y (L37) — pub y: f64,
+  [m] z (L38) — pub z: f64,
+  [m] vx (L39) — pub vx: f64,
+  [m] vy (L40) — pub vy: f64,
+  [m] vz (L41) — pub vz: f64,
+  [m] life (L42) — pub life: f64,
+  [m] dmg (L43) — pub dmg: f64,
+  [cls] ProjSlot (L46) — impl Default for ProjSlot {
+  [P] default (L47)
+  [enum] ProjHook (L64)
+  [enumerator] HitEnemy (L65)
+  [enumerator] HitWorld (L72)
+  [st] PickupRec (L79) — pub struct PickupRec {
+  [m] entity (L80) — pub entity: Entity,
+  [m] taken (L81) — pub taken: bool,
+  [enum] PickupHook (L85)
+  [enumerator] Taken (L86)
+  [st] CombatSys (L89) — pub struct CombatSys {
+  [m] proj (L90) — pub proj: [ProjSlot; PROJ_POOL],
+  [m] proj_active (L91) — pub proj_active: usize,
+  [m] pickups (L92) — pub pickups: Vec<PickupRec>,
+  [cls] CombatSys (L95) — impl CombatSys {
+  [P] new (L96)
+  [P] fire (L106)
+  [P] clear_projectiles (L136)
+  [P] update_projectiles (L144)
+  [P] spawn_pickup (L217)
+  [P] update_pickups (L265)
+  [ns] tests (L306)
+  [fn] capsule_predicate_matches_ts (L314) — fn capsule_predicate_matches_ts() {
+  [fn] fire_uses_first_inactive_slot (L336) — fn fire_uses_first_inactive_slot() {
+  [fn] pickup_reuse_prefers_taken_slot (L351) — fn pickup_reuse_prefers_taken_slot() {
+
+## systems/lifetime.rs
+  [st] LifetimeSys (L13) — pub struct LifetimeSys;
+  [cls] LifetimeSys (L15) — impl LifetimeSys {
+  [P] update (L16)
+  [ns] tests (L34)
+  [fn] countdown_then_despawn (L40) — fn countdown_then_despawn() {
+  [fn] no_lifetime_components_noop (L65) — fn no_lifetime_components_noop() {
+
+## systems/mod.rs
+  [ns] ai (L6)
+  [ns] combat (L7)
+  [ns] lifetime (L8)
+  [ns] movement (L9)
+
+## systems/movement.rs
+  [const] WALK (L47)
+  [const] SPRINT (L48)
+  [const] JUMP_VEL (L49)
+  [const] COYOTE (L50)
+  [const] BUFFER (L51)
+  [const] REST_Y (L52)
+  [const] CAM_DIST (L53)
+  [const] CAM_HEIGHT (L54)
+  [const] FIRE_COOLDOWN (L55)
+  [const] PROJ_SPEED (L56)
+  [const] PROJ_DAMAGE (L57)
+  [const] PROJ_LIFE (L58)
+  [st] CameraState (L63) — pub struct CameraState {
+  [m] pos (L64) — pub pos: DVec3,
+  [cls] CameraState (L67) — impl CameraState {
+  [P] forward (L70)
+  [st] PlayerController (L77) — pub struct PlayerController {
+  [m] entity (L78) — pub entity: Entity,
+  [m] body (L79) — pub body: Option<u32>,
+  [m] yaw (L80) — pub yaw: f64,
+  [m] pitch (L81) — pub pitch: f64,
+  [m] vx (L82) — pub vx: f64,
+  [m] vz (L83) — pub vz: f64,
+  [m] coyote (L84) — pub coyote: f64,
+  [m] buffer (L85) — pub buffer: f64,
+  [m] fire_cd (L86) — pub fire_cd: f64,
+  [m] was_grounded (L87) — pub was_grounded: bool,
+  [m] dip (L88) — pub dip: f64,
+  [m] ry (L89) — pub ry: f64,
+  [cls] PlayerController (L92) — impl PlayerController {
+  [P] new (L93)
+  [P] alive (L159)
+  [P] hp (L165)
+  [P] damage (L173)
+  [P] heal (L184)
+  [P] snap_cam_pos (L192)
+  [P] update (L208)
+  [P] update_camera (L314)
+  [P] teleport (L347)
