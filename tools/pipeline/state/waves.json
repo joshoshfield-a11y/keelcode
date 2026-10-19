@@ -27,7 +27,7 @@
    "brief": "workspace/game-kb/WAVE4-BRIEF.md",
    "n": 4,
    "name": "Convergence",
-   "notes": "Green-lit by user 2026-10-19 ('Go'). Parent-owned external build, 4a-4c only (shared smoke CI, asset-baker CLI, broader keel CLI). 4d (first real game) waits on the game choice before it starts. Runner must not touch this wave.",
+   "notes": "4a-4c MERGED to main 2026-10-19 (a571caa): shared smoke CI (keel smoke all backends exit 0), asset-baker CLI v1, broader keel CLI (new --backend/perf/vectors/bake/room). All gates green, no regressions. 4d starting: first real game = STARFALL (user's 'Do it' 2026-10-19), rescoped against arena-proven systems per the brief. Runner must not touch this wave.",
    "status": "in_progress_external"
   }
  ]
