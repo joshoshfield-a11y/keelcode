@@ -30,7 +30,7 @@ to real hardware; they are recorded for regression tracking between runs.
 | Triangles (drawn) | **5,474** | ~10,000–12,000 | 300,000 | **IMPROVEMENT** (~2× fewer). Under budget by 55×. |
 | DPR (headless) | 1 | 1 (vs 2.0 cap) | 2.0 / 1.5 | Same. Both run DPR 1 under headless SwiftShader. |
 | Frame time p95 | **82.5 ms** | (not reported) | 33.3 ms | **HEADLESS-ONLY**. SwiftShader software rasterization; meaningless for real hardware. Recorded for run-to-run regression tracking only. Real-device (S25) measurement is still open. |
-| Bundle size | **9,477,786 bytes (9.04 MB)** | 2.6 MB | — | **REGRESSION** (3.5×). Cause: Babylon core (~7.18 MB in `index-*.js`) + Havok WASM (~2.09 MB). Disclosed, not waived. This is the known cost of the Babylon/Havok stack; no action taken (would require dropping Havok or tree-shaking Babylon, out of scope for Wave 3). |
+| Bundle size | **9,477,786 bytes (9.04 MB)** | 2.6 MB | — | **REGRESSION** (3.5×), **WAIVED by the user 2026-10-19** ("Go"). Cause: Babylon core (~7.18 MB in `index-*.js`) + Havok WASM (~2.09 MB). This is the known cost of the Babylon/Havok stack; no action taken (would require dropping Havok or tree-shaking Babylon, out of scope for Wave 3). |
 | Console errors | 0 | 0 | 0 | Clean. |
 
 ### measured.json
