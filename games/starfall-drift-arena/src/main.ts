@@ -134,7 +134,7 @@ async function boot(): Promise<void> {
   // ---- wave-4d-meta: meta state. economy/questState become the single
   // source of truth; state.hull / state.docked stay the sim's (shared). ----
   const saveSys: SaveSys = createSave(SAVE_NAMESPACE);
-  let economy: Economy = createEconomy();
+  let economy: Economy = createEconomy({ credits: 100 });
   let questState: QuestState = createQuestState(generateQuests(SEED));
   let dead = false;
   let currentTick = 0;
@@ -213,6 +213,9 @@ async function boot(): Promise<void> {
     simRequestDock?.();
     if (state.docked && !dead) {
       loop.setPaused(true);
+      // Release the mouse: the trade UI is DOM, and a pointer-locked cursor
+      // is invisible — without this the station panel is unclickable.
+      document.exitPointerLock?.();
       stationUI.setDocked(true);
     }
   };
@@ -253,6 +256,8 @@ async function boot(): Promise<void> {
     if (dead) return;
     dead = true;
     loop.setPaused(true);
+    // Release the mouse so the game-over screen's buttons are clickable.
+    document.exitPointerLock?.();
     screens.showGameOver(economy.credits);
   }
 
