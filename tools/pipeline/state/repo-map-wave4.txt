@@ -1,0 +1,395 @@
+# repo-map: /home/hatch/workspace/keelcode
+# 43 files (depth<=3, showing first 400)
+
+backends/
+  rs-core/
+  ts-babylon/
+  ts-three/
+docs/
+  ADRs/
+  PIPELINE/
+framework/
+  schema/
+  smoke/
+tools/
+  keel-cli/
+  perf-harness/
+  pipeline/
+
+# symbols
+
+## README.md
+  [cls] KeelCode (L1) — # KeelCode
+  [st] What's here (L7) — ## What's here
+  [st] Quickstart (L34) — ## Quickstart
+  [st] Gates (per wave, no exceptions) (L48) — ## Gates (per wave, no exceptions)
+
+## backends/rs-core/INTERFACE.md
+  [cls] `keel-rs` Module Interface Contract — Wave 2a (L1) — # `keel-rs` Module Interface Contract — Wave 2a
+  [st] Cross-cutting rules (L11) — ## Cross-cutting rules
+  [st] `components` — canonical components, schema-exact field names (L22) — ## `components` — canonical components, schema-exact field names
+  [st] `ecs` — entity ids + per-component slot tables, queued mutation (L61) — ## `ecs` — entity ids + per-component slot tables, queued mutation
+  [st] `sim_loop` — fixed 60 Hz loop, named phases, shed guard (L105) — ## `sim_loop` — fixed 60 Hz loop, named phases, shed guard
+  [h] N (L143)
+  [st] `rng` — mulberry32 + `hash_seed`, bit-exact with the TS recipe (L152) — ## `rng` — mulberry32 + `hash_seed`, bit-exact with the TS recipe
+  [st] `input` — action map + scripted input log (headless) (L210) — ## `input` — action map + scripted input log (headless)
+  [st] `save` — JSON envelope, checksum, atomic writes, forward-only migrations (L252) — ## `save` — JSON envelope, checksum, atomic writes, forward-only migrations
+  [st] `audio` — null driver (Wave 2a) (L299) — ## `audio` — null driver (Wave 2a)
+  [st] `physics` — rapier3d 0.22 behind the driver boundary (L309) — ## `physics` — rapier3d 0.22 behind the driver boundary
+  [st] `demo` (demo workstream) — arena assembly + binary + parity (L351) — ## `demo` (demo workstream) — arena assembly + binary + parity
+
+## backends/rs-core/PERF.md
+  [cls] KeelCode `rs-core` — Wave 2b perf notes (desktop tier) (L1) — # KeelCode `rs-core` — Wave 2b perf notes (desktop tier)
+  [st] Dependency versions (rustc 1.99.0) (L8) — ## Dependency versions (rustc 1.99.0)
+  [st] Draw calls — declared budget: ≤ 8 per frame (L19) — ## Draw calls — declared budget: ≤ 8 per frame
+  [st] Frame time — UNMEASURED on this box (L38) — ## Frame time — UNMEASURED on this box
+  [st] Headless-run result (2026-10-19) (L47) — ## Headless-run result (2026-10-19)
+  [st] What the 2b screens are (L62) — ## What the 2b screens are
+  [st] Open item (L70) — ## Open item
+
+## backends/ts-babylon/index.html
+  [j] KeelCode — ts-babylon backend (L6)
+  [I] app (L27)
+  [I] ui (L28)
+
+## backends/ts-babylon/package.json
+  [st] @babylonjs/core (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] @babylonjs/havok (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [o] dependencies (L1)
+  [st] description (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] @playwright/test (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] typescript (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] vite (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] vitest (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [o] devDependencies (L1)
+  [st] name (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [b] private (L1)
+  [st] build (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] dev (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] preview (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] e2e (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] test (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] test:e2e (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [o] scripts (L1)
+  [st] type (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+  [st] version (L1) — {"dependencies":{"@babylonjs\/core":"9.31.0","@babylonjs\/havok":"1.3.14"},"description":"KeelCo
+
+## backends/ts-babylon/tsconfig.json
+  [b] esModuleInterop (L1)
+  [b] isolatedModules (L1)
+  [type] lib (L1)
+  [st] module (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [st] moduleResolution (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [b] noUnusedLocals (L1)
+  [b] noUnusedParameters (L1)
+  [b] resolveJsonModule (L1)
+  [b] skipLibCheck (L1)
+  [b] strict (L1)
+  [st] target (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [type] types (L1)
+  [b] useDefineForClassFields (L1)
+  [o] compilerOptions (L1)
+  [st] 0 (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [st] 1 (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [st] 2 (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [type] include (L1)
+
+## backends/ts-three/index.html
+  [j] KeelCode — ts-three reference backend (L6)
+  [I] app (L27)
+  [I] ui (L28)
+
+## backends/ts-three/package.json
+  [st] @dimforge/rapier3d-compat (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] three (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [o] dependencies (L1)
+  [st] description (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] @playwright/test (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] @types/three (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] typescript (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] vite (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] vitest (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [o] devDependencies (L1)
+  [st] name (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [b] private (L1)
+  [st] build (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] dev (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] e2e (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] preview (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] test (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [o] scripts (L1)
+  [st] type (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+  [st] version (L1) — {"dependencies":{"@dimforge\/rapier3d-compat":"^0.14.0","three":"^0.182.0"},"description":"KeelC
+
+## backends/ts-three/tsconfig.json
+  [b] esModuleInterop (L1)
+  [b] isolatedModules (L1)
+  [type] lib (L1)
+  [st] module (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [st] moduleResolution (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [b] noUnusedLocals (L1)
+  [b] noUnusedParameters (L1)
+  [b] resolveJsonModule (L1)
+  [b] skipLibCheck (L1)
+  [b] strict (L1)
+  [st] target (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [type] types (L1)
+  [b] useDefineForClassFields (L1)
+  [o] compilerOptions (L1)
+  [st] 0 (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [st] 1 (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [st] 2 (L1) — {"compilerOptions":{"esModuleInterop":true,"isolatedModules":true,"lib":["ES2022","DOM","DOM.Ite
+  [type] include (L1)
+
+## docs/KB-MAP.md
+  [cls] KB Map — engine subsystem → knowledge base note → owning skill (L1) — # KB Map — engine subsystem → knowledge base note → owning skill
+
+## docs/ADRs/0001-no-mandated-art-direction.md
+  [cls] ADR 0001 — No mandated art direction for KeelCode (L1) — # ADR 0001 — No mandated art direction for KeelCode
+  [st] Context (L5) — ## Context
+  [st] Decision (L16) — ## Decision
+  [st] Rationale (L23) — ## Rationale
+  [st] Consequences (L34) — ## Consequences
+
+## docs/ADRs/0002-cli-as-primary-interface.md
+  [cls] ADR 0002 — CLI plus agent skills as the primary interface (L1) — # ADR 0002 — CLI plus agent skills as the primary interface
+  [st] Context (L5) — ## Context
+  [st] Decision (L13) — ## Decision
+  [st] Rationale (L19) — ## Rationale
+  [st] Consequences (L31) — ## Consequences
+
+## docs/ADRs/0003-ts-three-reference-backend-first.md
+  [cls] ADR 0003 — TypeScript on three.js as the reference backend first (L1) — # ADR 0003 — TypeScript on three.js as the reference backend first
+
+## docs/ADRs/0004-rapier-version-pin.md
+  [cls] ADR 0004 — Pin `rapier3d` to `=0.22.0` for the Rust backend (L1) — # ADR 0004 — Pin `rapier3d` to `=0.22.0` for the Rust backend
+
+## docs/ADRs/0005-rust-save-superset.md
+  [cls] ADR 0005 — Rust save format is a superset of the TS save (and why bit-exact round-trip is not achievable) (L1) — # ADR 0005 — Rust save format is a superset of the TS save (and why bit-exact round-trip is no
+  [st] Context (L5) — ## Context
+  [st] Decision (L18) — ## Decision
+  [st] Why bit-exact round-trip is not achievable (L39) — ## Why bit-exact round-trip is not achievable
+  [st] Path forward (L62) — ## Path forward
+
+## docs/ADRs/0006-replicate-ts-respawn-bug.md
+  [cls] ADR 0006 — Replicate the TS enemy-respawn bug (do not fix it) (L1) — # ADR 0006 — Replicate the TS enemy-respawn bug (do not fix it)
+  [st] Context (L5) — ## Context
+  [st] Decision (L20) — ## Decision
+  [st] Rationale (L32) — ## Rationale
+  [st] Consequences (L40) — ## Consequences
+
+## docs/ADRs/0007-parity-tolerances.md
+  [cls] ADR-0007: Behavioral parity tolerances (Wave 2a gate) (L1) — # ADR-0007: Behavioral parity tolerances (Wave 2a gate)
+
+## docs/ADRs/0008-havok-version-pin.md
+  [cls] ADR 0008 — Pin `@babylonjs/core` to `9.31.0` and `@babylonjs/havok` to `1.3.14` (L1) — # ADR 0008 — Pin `@babylonjs\/core` to `9.31.0` and `@babylonjs\/havok` to `1.3.14`
+
+## docs/ADRs/0009-pointer-lock-quirk-babylon.md
+  [cls] ADR-0009: Pointer-lock acquisition camera swing in the Babylon port (L1) — # ADR-0009: Pointer-lock acquisition camera swing in the Babylon port
+
+## docs/ADRs/0010-wave-runner-cron.md
+  [cls] ADR-0010: Wave runner — cron + state file, not a workflow (L1) — # ADR-0010: Wave runner — cron + state file, not a workflow
+
+## docs/ADRs/0011-collaboration-safe-room.md
+  [cls] ADR-0011: Collaboration safe room + merge policy (L1) — # ADR-0011: Collaboration safe room + merge policy
+
+## docs/ADRs/0012-credit-lean-swarm.md
+  [cls] ADR-0012: Credit-lean swarm method (L1) — # ADR-0012: Credit-lean swarm method
+
+## docs/PIPELINE/README.md
+  [cls] KeelCode build pipeline (L1) — # KeelCode build pipeline
+  [st] Running the runner (L23) — ## Running the runner
+  [st] Launching a wave by hand (L40) — ## Launching a wave by hand
+  [st] Using the room (L49) — ## Using the room
+  [st] Merge policy (L68) — ## Merge policy
+  [st] Layout (L74) — ## Layout
+
+## docs/PIPELINE/SWARM-COST-RESEARCH.md
+  [cls] Swarm cost research — credit-lean multi-agent methods for KeelCode waves (L1) — # Swarm cost research — credit-lean multi-agent methods for KeelCode waves
+  [st] What was measured here (L16) — ## What was measured here
+  [S] M1. File-based handoffs vs pasted-content briefs — [measured] (L18)
+  [S] M2. Shared repo-map instead of per-agent tree reads — [measured] (L39)
+  [S] M3. Gate-first short-circuiting — [observed] + [estimated] (L50)
+  [S] M4. Trust reports, don't re-run — [observed] (L60)
+  [S] M5. Recorded vectors instead of re-recording — [observed] (L68)
+  [S] M6. Non-overlapping directory ownership — [observed] (L76)
+  [S] M7. No worker-spawned reviewers — [observed] (L84)
+  [S] M8. Model tiering by task — [observed], savings [estimated] (L92)
+  [S] M9. Bounded fan-out — [observed] (L105)
+  [S] M10. Disk ledger, not chat memory — [observed] (L115)
+  [S] M11. Batched parallel tool calls — [observed] (L124)
+  [S] M12. Stable prompt prefixes — [observed] (L131)
+  [st] What this means for a KeelCode wave — honest roll-up [estimated] (L138) — ## What this means for a KeelCode wave — honest roll-up [estimated]
+  [st] Deliberately NOT adopted (L160) — ## Deliberately NOT adopted
+  [st] How the pipeline applies this (traceability) (L170) — ## How the pipeline applies this (traceability)
+
+## framework/SPEC.md
+  [cls] KeelCode Framework Spec — v1 (L1) — # KeelCode Framework Spec — v1
+  [st] 1. Fixed timestep with named phases (L25) — ## 1. Fixed timestep with named phases
+  [st] 2. Seeded randomness (recommended pattern, not a contract) (L50) — ## 2. Seeded randomness (recommended pattern, not a contract)
+  [st] 3. Entity/component model and canonical components (L63) — ## 3. Entity\/component model and canonical components
+  [st] 4. Draw-call and perf budgets, binding no-regression rule (L100) — ## 4. Draw-call and perf budgets, binding no-regression rule
+  [st] 5. Asset pipeline conventions (L117) — ## 5. Asset pipeline conventions
+  [st] 6. Save-format contract (L131) — ## 6. Save-format contract
+  [st] What waves 2–4 owe this spec (L147) — ## What waves 2–4 owe this spec
+
+## framework/schema/asset-manifest.schema.json
+  [o] assetEntry (L1)
+  [o] $defs (L1)
+  [st] $id (L1) — {"$defs":{"assetEntry":{"additionalProperties":false,"description":"One baked asset. See framewo
+  [st] $schema (L1) — {"$defs":{"assetEntry":{"additionalProperties":false,"description":"One baked asset. See framewo
+  [st] description (L1) — {"$defs":{"assetEntry":{"additionalProperties":false,"description":"One baked asset. See framewo
+  [o] assets (L1)
+  [o] baker_version (L1)
+  [o] properties (L1)
+  [st] 0 (L1) — {"$defs":{"assetEntry":{"additionalProperties":false,"description":"One baked asset. See framewo
+  [type] required (L1)
+  [st] title (L1) — {"$defs":{"assetEntry":{"additionalProperties":false,"description":"One baked asset. See framewo
+  [st] type (L1) — {"$defs":{"assetEntry":{"additionalProperties":false,"description":"One baked asset. See framewo
+
+## framework/schema/component.schema.json
+  [o] AI (L1)
+  [o] Collider (L1)
+  [o] Health (L1)
+  [o] Input (L1)
+  [o] Lifetime (L1)
+  [o] Pickup (L1)
+  [o] Projectile (L1)
+  [o] Quaternion (L1)
+  [o] Renderable (L1)
+  [o] Script (L1)
+  [o] Transform (L1)
+  [o] Velocity (L1)
+  [o] componentName (L1)
+  [o] vec3 (L1)
+  [o] $defs (L1)
+  [st] $id (L1) — {"$defs":{"AI":{"additionalProperties":false,"properties":{"blackboard":{"type":"object"},"brain
+  [st] $schema (L1) — {"$defs":{"AI":{"additionalProperties":false,"properties":{"blackboard":{"type":"object"},"brain
+  [st] description (L1) — {"$defs":{"AI":{"additionalProperties":false,"properties":{"blackboard":{"type":"object"},"brain
+  [o] properties (L1)
+  [st] title (L1) — {"$defs":{"AI":{"additionalProperties":false,"properties":{"blackboard":{"type":"object"},"brain
+  [st] type (L1) — {"$defs":{"AI":{"additionalProperties":false,"properties":{"blackboard":{"type":"object"},"brain
+
+## framework/schema/save-format.schema.json
+  [st] $id (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [st] $schema (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [st] description (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [o] components (L1)
+  [o] engine (L1)
+  [o] format_version (L1)
+  [o] seed (L1)
+  [o] tick (L1)
+  [o] properties (L1)
+  [st] 0 (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [st] 1 (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [st] 2 (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [st] 3 (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [st] 4 (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [type] required (L1)
+  [st] title (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+  [st] type (L1) — {"$id":"https:\/\/keelcode.dev\/schema\/save-format.schema.json","$schema":"https:\/\/json-schem
+
+## framework/smoke/smoke.mjs
+  [const] here (L22)
+  [const] root (L23)
+  [const] tsThree (L24)
+  [const] harness (L25)
+  [var] stages (L27)
+  [fn] printSummary (L29) — function printSummary() {
+  [fn] stage (L36) — function stage(name, fn) {
+  [var] anonymousObjectfdf754ee0105 (L42)
+  [prototype] name (L42) — stages.push({ name, ok: true, ms });
+  [prototype] ok (L42) — stages.push({ name, ok: true, ms });
+  [prototype] ms (L42) — stages.push({ name, ok: true, ms });
+  [var] anonymousObjectfdf754ee0205 (L46)
+  [fn] run (L53) — function run(cmd, args, cwd) {
+  [var] anonymousObjectfdf754ee0305 (L54)
+
+## tools/keel-cli/package.json
+  [st] keel (L1) — {"bin":{"keel":".\/bin\/keel.mjs"},"description":"KeelCode's primary interface — scaffold, run
+  [o] bin (L1)
+  [st] description (L1) — {"bin":{"keel":".\/bin\/keel.mjs"},"description":"KeelCode's primary interface — scaffold, run
+  [st] name (L1) — {"bin":{"keel":".\/bin\/keel.mjs"},"description":"KeelCode's primary interface — scaffold, run
+  [st] type (L1) — {"bin":{"keel":".\/bin\/keel.mjs"},"description":"KeelCode's primary interface — scaffold, run
+  [st] version (L1) — {"bin":{"keel":".\/bin\/keel.mjs"},"description":"KeelCode's primary interface — scaffold, run
+
+## tools/perf-harness/PERF.md
+  [cls] KeelCode perf report — ts-three reference backend (L1) — # KeelCode perf report — ts-three reference backend
+  [st] Frame-time distribution (ms) (L15) — ## Frame-time distribution (ms)
+
+## tools/perf-harness/budgets.json
+  [st] $comment (L1) — {"$comment":"KeelCode Wave 1 perf budgets for the ts-three reference demo scene. Binding rule (f
+  [ns] desktop (L1)
+  [ns] mobile (L1)
+  [o] dpr (L1)
+  [ns] frameTimeP95Ms (L1)
+  [ns] maxDrawCalls (L1)
+  [ns] maxTriangles (L1)
+
+## tools/perf-harness/perf.mjs
+  [const] here (L30)
+  [const] root (L31)
+  [const] tsThree (L32)
+  [const] tsThreeRequire (L35)
+  [const] chromium (L36)
+  [const] budgets (L38)
+  [fn] arg (L40) — function arg(name, fallback) {
+  [const] tier (L45)
+  [const] FRAMES (L50)
+  [fn] waitForUrl (L52) — async function waitForUrl(url, timeoutMs = 30000) {
+  [var] anonymousObjectb75a86ae0105 (L56)
+  [fn] writeReport (L66) — function writeReport(results) {
+  [fn] printSummary (L98) — function printSummary(results) {
+  [prototype] .html (L109) — '.html': 'text\/html',
+  [prototype] .js (L110) — '.js': 'text\/javascript',
+  [prototype] .mjs (L111) — '.mjs': 'text\/javascript',
+  [prototype] .css (L112) — '.css': 'text\/css',
+  [prototype] .json (L113) — '.json': 'application\/json',
+  [prototype] .png (L114) — '.png': 'image\/png',
+  [prototype] .wasm (L115) — '.wasm': 'application\/wasm',
+  [var] MIME (L108)
+  [fn] installFileServer (L119) — async function installFileServer(page, fileUrl) {
+  [var] anonymousObjectb75a86ae0205 (L129)
+  [prototype] contentType (L130) — contentType: MIME[ext] || 'application\/octet-stream',
+  [prototype] body (L131) — body: readFileSync(p),
+  [fn] main (L142) — async function main() {
+  [var] anonymousObjectb75a86ae0305 (L157)
+  [var] results (L173)
+  [var] launchOpts (L175)
+  [var] anonymousObjectb75a86ae0405 (L181)
+  [prototype] width (L182) — viewport: tier === 'mobile' ? { width: 390, height: 844 } : { width: 1280, height: 720 },
+  [prototype] height (L182) — viewport: tier === 'mobile' ? { width: 390, height: 844 } : { width: 1280, height: 720 },
+  [var] anonymousObjectb75a86ae0505 (L190)
+  [prototype] waitUntil (L190) — await page.goto(url, { waitUntil: 'load' });
+  [var] anonymousObjectb75a86ae0605 (L194)
+  [prototype] timeout (L194) — { timeout: 20000 },
+  [var] anonymousObjectb75a86ae0705 (L200)
+  [fn] fr (L225) — function fr(t) {
+  [fn] pct (L240) — const pct = (p) => sorted[Math.min(sorted.length - 1, Math.floor((p \/ 100) * sorted.length)
+  [fn] check (L247) — const check = (name, measured, budget, pass, note) => {
+
+## tools/pipeline/MERGE-POLICY.md
+  [cls] Merge policy — KeelCode pipeline (L1) — # Merge policy — KeelCode pipeline
+  [st] What the automation may do without asking (L6) — ## What the automation may do without asking
+  [st] What waits on the user (L14) — ## What waits on the user
+  [st] Configuration (L23) — ## Configuration
+
+## tools/pipeline/config.json
+  [st] _comment (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+  [b] auto_launch_waves (L1)
+  [st] auto_launch_note (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+  [b] enabled (L1)
+  [ns] max_parallel_builders (L1)
+  [st] merge_policy (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+  [st] room_branch (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+  [st] room_worktree (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+  [st] state_dir (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+  [st] tick_note (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+  [st] worktree_root (L1) — {"_comment":"KeelCode build pipeline configuration. Edit by hand or via the main agent; the runn
+
+## tools/pipeline/wave-runner-tick.md
+  [cls] Wave runner — tick instructions (run by the `keel-wave-runner` cron agent) (L1) — # Wave runner — tick instructions (run by the `keel-wave-runner` cron agent)
+  [st] Step 1 — read state (cheap) (L7) — ## Step 1 — read state (cheap)
+  [st] Step 2 — reconcile any in-progress wave (cheap) (L14) — ## Step 2 — reconcile any in-progress wave (cheap)
+  [st] Step 3 — launch at most one wave (L30) — ## Step 3 — launch at most one wave
+  [st] Hard rules (L53) — ## Hard rules
