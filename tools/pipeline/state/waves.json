@@ -20,15 +20,15 @@
    "brief": "workspace/game-kb/WAVE3-BRIEF.md",
    "n": 3,
    "name": "Babylon.js backend",
-   "notes": "Complete 2026-10-19 (external coordinator, committed bd06b67). Gates: tsc clean, 53/53 vitest, 6/6 Playwright e2e zero console errors, vite build clean (9.04 MB). Backend-local vectors recorded. Regressions disclosed: draw calls 65 vs 15-27 (under 150 budget), bundle 9.04MB vs 2.6MB \u2014 awaiting user's waiver. Frame p95 headless-only; S25 check still open.",
+   "notes": "Complete 2026-10-19 (external coordinator, committed bd06b67). Gates: tsc clean, 53/53 vitest, 6/6 Playwright e2e zero console errors, vite build clean (9.04 MB). Backend-local vectors recorded. Regressions disclosed: draw calls 65 vs 15-27 (under 150 budget), bundle 9.04MB vs 2.6MB — awaiting user's waiver. Frame p95 headless-only; S25 check still open.",
    "status": "green"
   },
   {
-   "brief": null,
+   "brief": "workspace/game-kb/WAVE4-BRIEF.md",
    "n": 4,
    "name": "Convergence",
-   "notes": "Brief TBD (arch doc section 4: shared smoke CI, asset-baker CLI, broader keel CLI surface, first real game). Runner skips waves with no brief file \u2014 it reports 'awaiting brief', never launches blind.",
-   "status": "planned"
+   "notes": "Green-lit by user 2026-10-19 ('Go'). Parent-owned external build, 4a-4c only (shared smoke CI, asset-baker CLI, broader keel CLI). 4d (first real game) waits on the game choice before it starts. Runner must not touch this wave.",
+   "status": "in_progress_external"
   }
  ]
 }
