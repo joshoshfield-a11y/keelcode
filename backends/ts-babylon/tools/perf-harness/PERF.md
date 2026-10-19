@@ -26,7 +26,7 @@ to real hardware; they are recorded for regression tracking between runs.
 
 | Metric | ts-babylon (measured) | ts-three (build report) | Budget | Verdict |
 |---|---|---|---|---|
-| Draw calls | **65** | 15–27 | 150 | **REGRESSION vs ts-three** (2.4–4.3×), but **under budget** (65 < 150). Disclosed, not waived. Likely cause: Babylon issues more draws per mesh (material/lighting passes) and batches less aggressively than the three.js backend. No Babylon-isms were introduced to chase this; neutral placeholder art unchanged. |
+| Draw calls | **65 total** (21 main + 44 shadow) | 15–27 main-pass only | 150 | **NO REGRESSION — earlier verdict was a measurement artifact** (see note). Apples-to-apples: 21 vs 15 main-pass; 65 vs 66 total. |
 | Triangles (drawn) | **5,474** | ~10,000–12,000 | 300,000 | **IMPROVEMENT** (~2× fewer). Under budget by 55×. |
 | DPR (headless) | 1 | 1 (vs 2.0 cap) | 2.0 / 1.5 | Same. Both run DPR 1 under headless SwiftShader. |
 | Frame time p95 | **82.5 ms** | (not reported) | 33.3 ms | **HEADLESS-ONLY**. SwiftShader software rasterization; meaningless for real hardware. Recorded for run-to-run regression tracking only. Real-device (S25) measurement is still open. |
@@ -40,9 +40,19 @@ Full machine-readable results (including per-file bundle breakdown) are in
 
 ## Notes
 
-- The draw-call delta (65 vs 15–27) is the only rendering regression. It stays
-  comfortably under the 150-call S25 budget. If a future wave needs to close
-  the gap, the levers are mesh merging / stronger instancing in `src/game/gfx/`
+- **Draw-call methodology correction (2026-10-19, parent investigation):**
+  the "65 vs 15–27 regression" was an artifact of incomparable counters.
+  three.js `renderer.info.render.calls` is reset *after* the shadow-map pass
+  inside `WebGLRenderer.render()` (verified in three r182 source), so Wave 1's
+  15–27 counts the main pass only. Babylon's `_drawCalls` PerfCounter is
+  cumulative across the whole `scene.render()`, shadow pass included.
+  Empirical breakdown (headless Chromium, same technique both sides):
+  ts-babylon 65 = 21 main + 44 shadow (shadow generator disposed → 21);
+  ts-three 66 = 15 main + ~51 shadow (`info.autoReset=false` accumulation
+  over live frames). Instancing batches correctly on both (16 dressing boxes
+  = 1 draw in Babylon). **No draw-call regression exists.** The small main-pass
+  delta (21 vs 15) is within game-state/frustum noise; both far under budget.
+- If a future wave needs to close the gap, the levers are mesh merging / stronger instancing in `src/game/gfx/`
   — not material or lighting changes (house rule: no Babylon-isms).
 - Frame-time p95 on SwiftShader (82.5 ms) exceeds the 33.3 ms budget, but the
   budget targets real hardware; software-GL numbers cannot pass or fail it.
