@@ -1,0 +1,60 @@
+# INACTIVE — repo is local-only, LICENSE pending; uncomment on first public push
+# on:
+#   push:
+#   pull_request:
+#   workflow_dispatch:
+
+name: keel smoke (inactive)
+
+jobs:
+  smoke-ts-three:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: cd backends/ts-three && npm ci
+      - run: cd backends/ts-three && npm run build
+      - run: test -f backends/ts-three/dist/index.html
+      - run: cd backends/ts-three && npx vitest run
+      - run: cd backends/ts-three && node ../../tools/perf-harness/perf.mjs --tier desktop
+
+  smoke-rs-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - run: cd backends/rs-core && cargo test
+      - run: cd backends/rs-core && cargo clippy --all-targets -- -D warnings
+      - run: cd backends/rs-core && cargo fmt --check
+      - run: cd backends/rs-core && KEEL_PARITY_STRICT=1 cargo test --test parity
+
+  smoke-ts-babylon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: cd backends/ts-babylon && npm ci
+      - run: cd backends/ts-babylon && npx tsc --noEmit
+      - run: cd backends/ts-babylon && npx vitest run
+      - run: cd backends/ts-babylon && npx playwright install --with-deps chromium
+      - run: cd backends/ts-babylon && npx playwright test
+      - run: cd backends/ts-babylon && npx playwright test e2e/parity-record.spec.ts
+      - run: cd backends/ts-babylon && npm run build
+      - run: |
+          cd backends/ts-babylon
+          npx vite preview -- --port 4174 --strictPort &
+          SRV=$!
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:4174/ >/dev/null && break
+            sleep 1
+          done
+          node tools/perf-harness/measure.mjs
+          RC=$?
+          kill $SRV
+          exit $RC

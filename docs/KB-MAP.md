@@ -21,7 +21,9 @@ else.
 | Shaders, custom materials | `core/14-shaders.md` | `shader-craft` |
 | Quest/narrative templates | `core/15-quest-narrative.md` | `quest-narrative-gen` |
 | Networking (out of Wave 1 scope) | `core/11-networking.md` | `netcode-basics` |
-| Asset pipeline, baker CLI | `publish/` notes | (Wave 4; tool owns its own playbook) |
+| Asset pipeline, baker CLI | `publish/` notes, `tools/asset-baker/README.md` | (Wave 4; tool owns its own playbook) |
+| Shared smoke CI across all backends (`keel smoke`) | `~/workspace/game-kb/PHASE1-DESIGN.md` §5–6 | `xandria-qa` |
+| keel CLI surface (`new --backend`, `perf`, `vectors`, `bake`, `room`) | `docs/CLI.md` | — |
 | Ship pipeline: web build, APK, itch.io | `publish/` notes | `itchio-publish`, `apk-build-via-actions` |
 | QA workflow per wave, gates, report-first | `~/workspace/game-kb/PHASE1-DESIGN.md` §5–6 | `xandria-qa` |
 | Framework spec provenance | `~/workspace/game-kb/ENGINE-ARCHITECTURE.md` | — |
