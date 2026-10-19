@@ -13,7 +13,7 @@
 
 import * as THREE from 'three';
 
-const HULL_TEXTURE_URL = '/assets/station/dock/hull.png';
+import { loadBakedTexture } from './textures';
 
 export interface StationAnimation {
   /** Rotates the ring, blinks the dock lights. t = seconds. */
@@ -23,10 +23,7 @@ export interface StationAnimation {
 export function createStation(): THREE.Group {
   const group = new THREE.Group();
 
-  const tex = new THREE.TextureLoader().load(HULL_TEXTURE_URL);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = loadBakedTexture('station/dock/hull');
 
   const hull = new THREE.MeshStandardMaterial({
     map: tex,

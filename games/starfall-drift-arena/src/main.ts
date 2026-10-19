@@ -1,14 +1,23 @@
-/** STARFALL: Drift Arena — full game boot (sim core).
+/** STARFALL: Drift Arena — integrated game boot (sim + meta).
  *
- * Arcade 6DOF-ish space sim: flight + pirates + mining + station.
- * Auto-starts on canvas click (pointer lock). The title screen arrives via
- * the meta builder's patch — this boot keeps working when it lands.
+ * Composition root over the engine in src/engine/:
+ * - sim core (4d-sim): arcade 6DOF-ish flight, pirate FSM, projectiles,
+ *   asteroid mining, station entity. Bootstrapped via
+ *   `keel new games/starfall-drift-arena --backend ts-three`.
+ * - meta layer (4d-meta): economy, quests, save/load, HUD, screens, station
+ *   UI + mesh. Integrated per games/starfall-drift-arena/INTEGRATION.md.
+ *
+ * The sim's GameAPI object keeps its identity (sim systems call ctx.api);
+ * the meta modules replace its economy/quest interiors in place.
+ * Debug hook for e2e: window.__keel = { world, loop, input, renderer,
+ * playerId, game }.
  */
 
 import * as THREE from 'three';
 import { createWorld, type World, C, type TransformC } from './engine/ecs';
 import { createLoop, type Loop } from './engine/loop';
 import { createInput, type InputSys } from './engine/input';
+import { createSave, type SaveSys } from './engine/save';
 import {
   createGameState, type GameAPI, type SimCtx,
 } from './game/api';
@@ -18,6 +27,12 @@ import { createProjectileSystem } from './game/projectiles';
 import {
   createAsteroidField, createAsteroidSystem, createStationEntity, syncMiningBeam,
 } from './game/asteroids';
+import { createEconomy, type Economy } from './game/economy';
+import { generateQuests, createQuestState, type QuestState } from './game/quests';
+import { saveGame, loadGame, SAVE_NAMESPACE, SAVE_SLOT, type DriftArenaSave } from './game/savegame';
+import { createHUD, type HUD } from './game/hud';
+import { createScreens, type Screens } from './game/screens';
+import { createStationUI, type StationUI } from './game/station';
 import { createStarfield } from './gfx/starfield';
 
 declare global {
@@ -32,6 +47,9 @@ declare global {
 const _camDesired = new THREE.Vector3();
 const _camLook = new THREE.Vector3();
 const _shipFwd = new THREE.Vector3();
+
+/** Pinned run seed — quest flavor text only; pinned numbers unaffected. */
+const SEED = 20261019;
 
 function defineActions(input: InputSys): void {
   input.defineAction('thrustFwd', [{ type: 'key', code: 'KeyW' }]);
@@ -112,6 +130,21 @@ async function boot(): Promise<void> {
   input.attach();
 
   const { api, state } = createGameState();
+
+  // ---- wave-4d-meta: meta state. economy/questState become the single
+  // source of truth; state.hull / state.docked stay the sim's (shared). ----
+  const saveSys: SaveSys = createSave(SAVE_NAMESPACE);
+  let economy: Economy = createEconomy();
+  let questState: QuestState = createQuestState(generateQuests(SEED));
+  let dead = false;
+  let currentTick = 0;
+  let started = false;
+
+  // Forward declarations: assigned below; closures run after assignment.
+  let hud!: HUD;
+  let stationUI!: StationUI;
+  let screens!: Screens;
+
   const ctx: SimCtx = {
     world, loop, input, api, state,
     scene, camera,
@@ -136,12 +169,122 @@ async function boot(): Promise<void> {
   state.hooks.spawnPirateWave = (n: number) => spawnPirateWave(ctx, n);
   spawnPirateWave(ctx, 3);
 
+  // ---- wave-4d-meta: rewire the GameAPI interiors in place ----
+  // Same object identity — the sim's systems keep calling ctx.api.
+  function claimCompleted(completed: string[]): void {
+    for (const id of completed) economy.addCredits(questState.claimReward(id));
+  }
+  api.getCredits = () => economy.credits;
+  api.addCredits = (n) => economy.addCredits(n);
+  api.getOre = () => economy.ore;
+  // NOTE (resolves sim Q2 + meta Q2): no quest coupling in addOre. The sim
+  // calls addQuestProgress('mine', 1) explicitly at the mining site;
+  // coupling here would double-count, and ore pickups salvaged from pirate
+  // wrecks are not mining and must not advance the mine quest.
+  api.addOre = (n) => economy.addOre(n);
+  api.spendOre = (n) => economy.spendOre(n);
+  api.getHull = () => state.hull;
+  api.getMaxHull = () => economy.maxHull();
+  api.damagePlayer = (n) => {
+    if (dead) return;
+    state.hull = Math.max(0, state.hull - n);
+    hud.flashDamage();
+    if (state.hull <= 0) onPlayerDeath();
+  };
+  api.getUpgrades = () => ({ ...economy.upgrades });
+  api.buyUpgrade = (kind) => {
+    const ok = economy.buyUpgrade(kind);
+    // A shield upgrade also repairs the +25 max-hull it adds.
+    if (ok && kind === 'shield') state.hull = Math.min(state.hull + 25, economy.maxHull());
+    return ok;
+  };
+  api.sellOre = () => economy.sellOre();
+  api.addQuestProgress = (kind, n) => claimCompleted(questState.addProgress(kind, n));
+  api.getQuests = () => questState.toViews();
+  state.hull = api.getMaxHull();
+
+  // ---- wave-4d-meta: UI layers (game exists by now) ----
+  hud = createHUD(ui, api);
+  stationUI = createStationUI(ui, api);
+
+  // Dock: the sim's hook does the proximity gate; on success pause + panel.
+  const simRequestDock = state.hooks.requestDock;
+  state.hooks.requestDock = () => {
+    simRequestDock?.();
+    if (state.docked && !dead) {
+      loop.setPaused(true);
+      stationUI.setDocked(true);
+    }
+  };
+  stationUI.onUndock = () => {
+    state.docked = false;
+    stationUI.setDocked(false);
+    loop.setPaused(false);
+  };
+
+  function quickSave(): void {
+    saveGame(saveSys, SAVE_SLOT, {
+      version: 1,
+      credits: economy.credits,
+      ore: economy.ore,
+      upgrades: { ...economy.upgrades },
+      questProgress: questState.progress,
+      questDone: questState.done,
+      playerHull: state.hull,
+      tick: currentTick,
+    });
+    screens.setHasSave(true);
+  }
+
+  function restoreSave(s: DriftArenaSave): void {
+    economy = createEconomy({ credits: s.credits, ore: s.ore, upgrades: s.upgrades });
+    questState = createQuestState(generateQuests(SEED), {
+      progress: s.questProgress,
+      done: s.questDone,
+    });
+    state.hull = Math.min(s.playerHull, economy.maxHull());
+    // NOTE: entity positions / pirates / asteroids are NOT restored — the
+    // save covers the meta state (credits/ore/upgrades/quests/hull), which
+    // is what the playthrough asserts. Full world-state save is a Wave 5
+    // candidate (SPEC issue).
+  }
+
+  function onPlayerDeath(): void {
+    if (dead) return;
+    dead = true;
+    loop.setPaused(true);
+    screens.showGameOver(economy.credits);
+  }
+
+  function beginPlay(): void {
+    if (started) return;
+    started = true;
+    dead = false;
+    screens.hideTitle();
+    loop.start();
+    (renderer.domElement as HTMLCanvasElement).requestPointerLock?.();
+  }
+
+  screens = createScreens(ui, {
+    onLaunch: () => beginPlay(),
+    onContinue: () => {
+      const s = loadGame(saveSys, SAVE_SLOT);
+      if (s) restoreSave(s);
+      beginPlay();
+    },
+    onResume: () => { screens.hidePause(); loop.setPaused(false); },
+    // Restarting from a dead run reloads: the save survives in
+    // localStorage, so Continue still works after the reload.
+    onRestart: () => window.location.reload(),
+    onSave: () => quickSave(),
+    noteUiClick: () => undefined,
+  });
+
   // ---- pointer-lock steering (deltas clamped per event) ----
   canvas.addEventListener('click', () => {
     if (document.pointerLockElement !== canvas) {
       canvas.requestPointerLock();
     }
-    hideHint();
   });
   document.addEventListener('mousemove', (e: MouseEvent) => {
     if (document.pointerLockElement !== canvas) return;
@@ -151,27 +294,33 @@ async function boot(): Promise<void> {
     ctx.look.pitch -= clampLookDelta(e.movementY * 0.0022);
   });
 
-  // minimal "click to fly" hint (title screen arrives via the meta patch)
-  const hint = document.createElement('div');
-  hint.id = 'kc-fly-hint';
-  hint.style.cssText =
-    'position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);' +
-    'color:#dfe6f2;font:16px/1.6 system-ui,sans-serif;text-align:center;' +
-    'background:rgba(8,10,16,0.55);padding:18px 28px;border-radius:10px;' +
-    'border:1px solid rgba(160,180,210,0.25);pointer-events:none;';
-  hint.innerHTML =
-    '<b>STARFALL: DRIFT ARENA</b><br>click to fly<br>' +
-    '<span style="opacity:0.75">W/S thrust · A/D strafe · mouse steer · click fire · E mine · F dock</span>';
-  ui.appendChild(hint);
-  function hideHint(): void {
-    hint.style.display = 'none';
-  }
+  // Pause toggle + quick-save (not while docked or on the title screen).
+  window.addEventListener('keydown', (ev: KeyboardEvent) => {
+    if (ev.code === 'Escape' || ev.code === 'KeyP') {
+      if (state.docked || screens.titleVisible || dead) return;
+      const paused = !loop.paused;
+      loop.setPaused(paused);
+      if (paused) screens.showPause(); else screens.hidePause();
+    }
+    if (ev.code === 'F5') {
+      ev.preventDefault();
+      if (!screens.titleVisible && !dead) quickSave();
+    }
+  });
+
+  // Station ring rotation + blinking dock lights.
+  const stationMesh = ctx.meshes.get(state.stationId);
+  const stationAnim = stationMesh?.userData.update as
+    ((dt: number, t: number) => void) | undefined;
 
   loop.on('preupdate', () => input.update());
   loop.on('postupdate', (c) => {
+    currentTick = c.tick;
     syncMeshes(ctx);
     syncMiningBeam(ctx, mineState);
     updateChaseCamera(ctx, c.dt);
+    stationAnim?.(c.dt, c.tick / 60);
+    hud.update(c.dt);
   });
   loop.on('render', () => renderer.render(scene, camera));
 
@@ -183,7 +332,9 @@ async function boot(): Promise<void> {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  loop.start();
+  // Title first — Launch/Continue start the sim.
+  screens.showTitle();
+  screens.setHasSave(saveSys.list().includes(SAVE_SLOT));
 }
 
 void boot();

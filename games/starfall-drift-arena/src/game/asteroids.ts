@@ -14,7 +14,8 @@ import {
   C, type LifetimeC, type PickupC, type TransformC, type VelocityC,
 } from '../engine/ecs';
 import { attachMesh, despawnEntity, type SimCtx } from './api';
-import { createAsteroidMesh, createOrePickupMesh, createStation } from '../gfx/asteroids';
+import { createAsteroidMesh, createOrePickupMesh } from '../gfx/asteroids';
+import { createStation } from '../gfx/station';
 import { forwardFromEuler } from './flight';
 
 export interface RockData {

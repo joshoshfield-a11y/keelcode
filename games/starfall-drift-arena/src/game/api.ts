@@ -33,7 +33,7 @@ export interface GameAPI {
   buyUpgrade(kind: 'guns' | 'engine' | 'shield'): boolean;
   sellOre(): number;
   addQuestProgress(kind: 'kill' | 'mine' | 'deliver', n: number): void;
-  getQuests(): Array<{ id: string; kind: string; target: number; progress: number; reward: number; done: boolean }>;
+  getQuests(): Array<{ id: string; kind: string; title: string; target: number; progress: number; reward: number; done: boolean }>;
   spawnPirateWave(n: number): void;
   requestDock(): void; isDocked(): boolean;
   stationId: number; playerShipId: number;
@@ -42,6 +42,7 @@ export interface GameAPI {
 export interface QuestRec {
   id: string;
   kind: 'kill' | 'mine' | 'deliver';
+  title: string;
   target: number;
   progress: number;
   reward: number;
@@ -99,9 +100,9 @@ export function thrustOf(state: GameState): number {
 
 function freshQuests(): QuestRec[] {
   return [
-    { id: 'q-kill-8', kind: 'kill', target: 8, progress: 0, reward: 250, done: false },
-    { id: 'q-mine-20', kind: 'mine', target: 20, progress: 0, reward: 200, done: false },
-    { id: 'q-deliver-15', kind: 'deliver', target: 15, progress: 0, reward: 300, done: false },
+    { id: 'q-kill-8', kind: 'kill', title: 'Pirate Hunt', target: 8, progress: 0, reward: 250, done: false },
+    { id: 'q-mine-20', kind: 'mine', title: 'Ore Run', target: 20, progress: 0, reward: 200, done: false },
+    { id: 'q-deliver-15', kind: 'deliver', title: 'Supply Delivery', target: 15, progress: 0, reward: 300, done: false },
   ];
 }
 
@@ -163,7 +164,7 @@ export function createGameState(): { api: GameAPI; state: GameState } {
     },
     getQuests: () =>
       state.quests.map((q) => ({
-        id: q.id, kind: q.kind, target: q.target,
+        id: q.id, kind: q.kind, title: q.title, target: q.target,
         progress: q.progress, reward: q.reward, done: q.done,
       })),
     spawnPirateWave: (n: number) => { state.hooks.spawnPirateWave?.(n); },
