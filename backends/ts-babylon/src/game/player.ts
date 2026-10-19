@@ -1,0 +1,346 @@
+/** Third-person player controller on the engine APIs.
+ *  Camera-relative movement via input axes, mouse look (pointer lock on
+ *  canvas click, drag fallback), Space jump (coyote 0.1s + buffer), Shift
+ *  sprint. The Havok dynamic capsule carries position/collisions; this
+ *  system owns feel and writes velocity each tick. Camera follow with
+ *  smoothing, collision-avoidance raycast, sprint FOV kick, landing dip.
+ *
+ *  Babylon port of the ts-three reference (game/player.ts): ALL sim-space
+ *  math (positions, yaw/pitch, wish direction, tuning constants) is
+ *  bit-for-bit identical to the reference. Only the render-sync layer
+ *  changes, because three.js is right-handed and Babylon is left-handed
+ *  (both Y-up):
+ *
+ *    RENDER-SPACE CONVENTION (applied ONLY when writing to the scene graph
+ *    or camera; never to sim state):
+ *      position : (x, y, z)_sim  ->  (x, y, -z)_render
+ *      yaw      : ry_sim          ->  (PI + ry_sim)_render
+ *      x/z tilt : a_sim           ->  (-a)_render
+ *      direction: (dx, dy, dz)_sim -> (dx, dy, -dz)_render
+ *
+ *  Positions are z-mirrored and Y-rotations are shifted by PI so that every
+ *  facing relationship (enemy->player, camera->target, projectile dir) is
+ *  preserved exactly and the on-screen image is not mirrored. Camera FOV is
+ *  kept in degrees in game logic and converted to radians at the Babylon
+ *  camera boundary.
+ *
+ *  NOTE (frozen behavior, see docs/ADRs/0009-pointer-lock-quirk-babylon.md):
+ *  the pointer-lock acquisition mousemove quirk from ADR-0007 is present
+ *  here by design — Chromium dispatches a mousemove with the negated
+ *  pre-lock cursor position on lock, which swings the camera via addLook().
+ *  The harness suppresses mousemove; the game-side fix awaits the user's
+ *  call. Do NOT "fix" it here. */
+
+import * as BABYLON from '@babylonjs/core';
+import { C, World } from '../engine/ecs';
+import type { InputSys } from '../engine/input';
+import type { PhysicsSys } from '../engine/physics';
+import type { AudioSys } from '../engine/audio';
+import { buildPlayerMesh, addShadowCasters } from '../gfx/character';
+import type { Mats } from '../gfx/materials';
+import type { ArenaData } from './arena';
+import { resolveStaticContact, CONTACT_SINK_PER_TICK } from './arena';
+import { makeTransform, writePos, makeHealth, getHp, setHp, TransformFull, HealthFull } from './sim';
+
+const WALK = 5.2;
+const SPRINT = 7.8;
+const JUMP_VEL = 4.9;      // Rapier gravity -9.81 -> ~1.2m apex
+const COYOTE = 0.1;
+const BUFFER = 0.12;
+const REST_Y = 0.85;       // capsule center at rest (hy 0.5 + hx 0.35)
+const CAM_DIST = 4.6;
+const CAM_HEIGHT = 1.7;
+const LOOK_SENS = 0.0026;
+const FOV_BASE = 60;
+const FOV_SPRINT = 69;
+const DEG = Math.PI / 180;
+
+const _fwd = new BABYLON.Vector3();
+const _wish = new BABYLON.Vector3();
+const _camPos = new BABYLON.Vector3();   // sim space
+const _camPosR = new BABYLON.Vector3();  // render space
+const _target = new BABYLON.Vector3();   // sim space
+const _targetR = new BABYLON.Vector3();  // render space
+const _dir = new BABYLON.Vector3();
+const _p = { x: 0, y: 0, z: 0 };
+
+/** Sim (x,y,z) -> render (x,y,-z), writing into a scratch vector. */
+function toRender(out: BABYLON.Vector3, x: number, y: number, z: number): BABYLON.Vector3 {
+  return out.set(x, y, -z);
+}
+
+export function isTouchDevice(): boolean {
+  return (typeof window !== 'undefined') &&
+    (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window);
+}
+
+/** Pointer lock that never produces an unhandled rejection (e2e zero-error gate). */
+export function requestPointerLock(canvas: HTMLCanvasElement): void {
+  try {
+    const r = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
+    if (r && typeof r.catch === 'function') r.catch(() => { /* lock unavailable */ });
+  } catch {
+    /* lock unavailable */
+  }
+}
+
+export class Player {
+  readonly id: number;
+  /** Set by main when UI buttons are clicked; edges ignored until then. */
+  suppressUntil = 0;
+  onFire: (fx: number, fy: number, fz: number, dx: number, dy: number, dz: number) => void = () => {};
+  onLand: () => void = () => {};
+  onHurt: (hp: number) => void = () => {};
+  onDie: () => void = () => {};
+
+  private bodyId = -1;
+  private yaw = Math.PI;
+  private pitch = -0.18;
+  private coyote = 0;
+  private buffer = 0;
+  private fireCd = 0;
+  private fov = FOV_BASE;
+  private dip = 0;
+  private wasGrounded = true;
+  private vx = 0;
+  private vz = 0;
+  private dragging = false;
+  private lastPX = 0;
+  private lastPY = 0;
+  private node: BABYLON.TransformNode;
+  private isTouch = false;
+
+  constructor(
+    private world: World,
+    private input: InputSys,
+    private physics: PhysicsSys,
+    private audio: AudioSys,
+    scene: BABYLON.Scene,
+    mats: Mats,
+    private camera: BABYLON.UniversalCamera,
+    private arena: ArenaData,
+    private canvas: HTMLCanvasElement,
+  ) {
+    this.isTouch = isTouchDevice();
+    this.id = world.spawn({
+      [C.Transform]: makeTransform(0, 0, 8, Math.PI),
+      [C.Velocity]: { x: 0, y: 0, z: 0 },
+      [C.Health]: makeHealth(100, 100),
+      [C.Collider]: { kind: 'capsule', hx: 0.35, hy: 0.5, hz: 0, static: false },
+      [C.Player]: {},
+      [C.Input]: { controlled: true },
+      [C.Renderable]: { mesh: 'player', tint: 0xffffff, visible: true },
+    });
+    this.bodyId = physics.addBody({ kind: 'capsule', hx: 0.35, hy: 0.5, hz: 0, x: 0, y: REST_Y, z: 8, static: false });
+    this.node = buildPlayerMesh(mats, scene);
+    addShadowCasters(arena.shadow, this.node);
+    this.attachLook();
+  }
+
+  get hp(): number {
+    const h = this.world.get<HealthFull>(this.id, C.Health);
+    return h ? getHp(h) : 0;
+  }
+
+  get alive(): boolean {
+    return this.hp > 0;
+  }
+
+  damage(amount: number): void {
+    const h = this.world.get<HealthFull>(this.id, C.Health);
+    if (!h || getHp(h) <= 0) return;
+    const v = Math.max(0, getHp(h) - amount);
+    setHp(h, v);
+    this.audio.play('hurt');
+    this.onHurt(v);
+    if (v <= 0) this.onDie();
+  }
+
+  heal(amount: number): void {
+    const h = this.world.get<HealthFull>(this.id, C.Health);
+    if (!h) return;
+    setHp(h, Math.min(h.maxHp, getHp(h) + amount));
+  }
+
+  reset(x: number, z: number): void {
+    const t = this.world.get<TransformFull>(this.id, C.Transform);
+    const h = this.world.get<HealthFull>(this.id, C.Health);
+    if (t) writePos(t, x, REST_Y, z);
+    if (h) setHp(h, h.maxHp);
+    if (this.bodyId >= 0) {
+      this.physics.setKinematicPosition(this.bodyId, x, REST_Y, z);
+      this.physics.setVelocity(this.bodyId, 0, 0, 0);
+    }
+    this.vx = 0; this.vz = 0;
+    this.yaw = Math.PI; this.pitch = -0.18;
+  }
+
+  /** External look input (touch drag). */
+  addLook(dx: number, dy: number): void {
+    this.yaw -= dx * LOOK_SENS;
+    this.pitch -= dy * LOOK_SENS;
+    this.pitch = Math.max(-1.1, Math.min(0.45, this.pitch));
+  }
+
+  private attachLook(): void {
+    this.canvas.addEventListener('click', () => {
+      if (!this.isTouch && document.pointerLockElement !== this.canvas) {
+        requestPointerLock(this.canvas);
+      }
+    });
+    // NOTE: the pointer-lock acquisition mousemove quirk (ADR-0007) flows
+    // through here by design; see the file header and ADR-0009.
+    document.addEventListener('mousemove', (e: MouseEvent) => {
+      if (document.pointerLockElement === this.canvas) {
+        this.addLook(e.movementX, e.movementY);
+      } else if (this.dragging) {
+        this.addLook((e.clientX - this.lastPX) * 1.6, (e.clientY - this.lastPY) * 1.6);
+        this.lastPX = e.clientX; this.lastPY = e.clientY;
+      }
+    });
+    this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
+      if (e.button === 0 && document.pointerLockElement !== this.canvas && !this.isTouch) {
+        this.dragging = true;
+        this.lastPX = e.clientX; this.lastPY = e.clientY;
+      }
+    });
+    window.addEventListener('mouseup', (e: MouseEvent) => {
+      if (e.button === 0) this.dragging = false;
+    });
+  }
+
+  /** Update phase: movement intent + jump + fire. Physics steps after. */
+  update(dt: number): void {
+    if (!this.alive || this.bodyId < 0) return;
+    const t = this.world.get<TransformFull>(this.id, C.Transform);
+    if (!t) return;
+    this.physics.getPosition(this.bodyId, _p);
+    // Controller-owned vertical motion + ground contact. The Havok ANIMATED
+    // driver applies no gravity and resolves no contacts (Child A probe
+    // 2026-10-19: animated sphere fell straight through the static ground
+    // to y=-25); ts-three's Rapier build did both inside the physics step.
+    // Measured ts-three behavior: vy is forced to {0, JUMP_VEL} every tick,
+    // the step sinks the body CONTACT_SINK_PER_TICK per tick, ground contact
+    // clamps y to REST_Y (jump apex +0.079m, ~0.8s float back down).
+    // Jump logic and every tuning constant below are untouched.
+    const py0 = _p.y;
+    if (_p.y > REST_Y) _p.y = Math.max(REST_Y, _p.y - CONTACT_SINK_PER_TICK);
+    // Controller-owned wall contact: push the capsule's XZ circle out of
+    // static AABBs (walls, pillars). Without this the ANIMATED body walks
+    // straight through them; ts-three's contact solver stopped it at
+    // exactly (wall face - radius) — verified 2026-10-19 (x=19.654).
+    const pushed = resolveStaticContact(this.arena.statics, _p, 0.35);
+    if (pushed || _p.y !== py0) {
+      this.physics.setKinematicPosition(this.bodyId, _p.x, _p.y, _p.z);
+    }
+    writePos(t, _p.x, _p.y, _p.z);
+    const grounded = _p.y <= REST_Y + 0.07;
+    const uiBlocked = performance.now() < this.suppressUntil;
+
+    // wish direction, camera-relative
+    const mx = this.input.axis('moveX');
+    const mz = this.input.axis('moveY');
+    const sy = Math.sin(this.yaw), cy = Math.cos(this.yaw);
+    _wish.set(mx * cy - mz * sy, 0, -mx * sy - mz * cy);
+    if (_wish.lengthSquared() > 1) _wish.normalize();
+    const sprinting = this.input.isDown('sprint') && mz > 0.1;
+    const speed = sprinting ? SPRINT : WALK;
+    _wish.scaleInPlace(speed);
+
+    // smooth horizontal velocity toward wish (arcade accel)
+    const k = Math.min(1, (grounded ? 14 : 5) * dt);
+    this.vx += (_wish.x - this.vx) * k;
+    this.vz += (_wish.z - this.vz) * k;
+
+    // coyote + jump buffer
+    if (grounded) this.coyote = COYOTE; else this.coyote -= dt;
+    if (!uiBlocked && this.input.pressed('jump')) this.buffer = BUFFER; else this.buffer -= dt;
+    let vy = 0;
+    if (this.buffer > 0 && this.coyote > 0) {
+      vy = JUMP_VEL;
+      this.buffer = 0; this.coyote = 0;
+      this.audio.play('jump');
+    }
+    this.physics.setVelocity(this.bodyId, this.vx, vy, this.vz);
+
+    // landing
+    if (!this.wasGrounded && grounded) {
+      this.dip = 0.14;
+      this.audio.play('ui', { volume: 0.4 });
+      this.onLand();
+    }
+    this.wasGrounded = grounded;
+
+    // face movement direction
+    if (mx !== 0 || mz !== 0) {
+      t.ry = Math.atan2(_wish.x, _wish.z);
+    }
+
+    // fire (only when pointer locked on desktop, or touch)
+    const canFire = this.isTouch || document.pointerLockElement === this.canvas;
+    this.fireCd -= dt;
+    if (!uiBlocked && canFire && this.fireCd <= 0 &&
+        (this.input.pressed('fire') || this.input.isDown('fire'))) {
+      this.fireCd = 0.18;
+      // render-space forward -> sim-space direction (z negated back)
+      this.camera.getDirectionToRef(BABYLON.Axis.Z, _fwd);
+      this.onFire(t.x, t.y + 1.5, t.z, _fwd.x, _fwd.y, -_fwd.z);
+      this.audio.play('shoot');
+    }
+
+    // sprint FOV kick (game logic in degrees; converted at the camera boundary)
+    const targetFov = sprinting && (mx !== 0 || mz !== 0) ? FOV_SPRINT : FOV_BASE;
+    this.fov += (targetFov - this.fov) * Math.min(1, 6 * dt);
+    const fovRad = this.fov * DEG;
+    if (Math.abs(this.camera.fov - fovRad) > 0.001) {
+      this.camera.fov = fovRad; // Babylon recomputes projection from fov each frame
+    }
+
+    // render mapping
+    this.node.position.set(t.x, t.y, -t.z);
+    this.node.rotation.y = Math.PI + t.ry;
+  }
+
+  /** Postupdate: smoothed follow camera with collision-avoidance raycast. */
+  updateCamera(dt: number): void {
+    const t = this.world.get<TransformFull>(this.id, C.Transform);
+    if (!t) return;
+    const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+    const cy = Math.cos(this.yaw), sy = Math.sin(this.yaw);
+
+    _target.set(t.x, t.y + CAM_HEIGHT, t.z);
+    _dir.set(sy * cp, -sp, cy * cp); // from target toward camera
+    let dist = CAM_DIST;
+    const hit = this.arena.raycast(_target.x, _target.y, _target.z, _dir.x, _dir.y, _dir.z, CAM_DIST);
+    if (hit < dist) dist = Math.max(0.6, hit - 0.25);
+
+    _camPos.set(
+      _target.x + _dir.x * dist,
+      _target.y + _dir.y * dist,
+      _target.z + _dir.z * dist,
+    );
+    this.dip = Math.max(0, this.dip - dt * 0.9);
+    _camPos.y -= this.dip;
+
+    toRender(_camPosR, _camPos.x, _camPos.y, _camPos.z);
+    const kk = 1 - Math.exp(-14 * dt);
+    BABYLON.Vector3.LerpToRef(this.camera.position, _camPosR, kk, this.camera.position);
+    toRender(_targetR, _target.x, _target.y, _target.z);
+    this.camera.setTarget(_targetR);
+  }
+
+  /** Snap camera behind player (spawn / load). */
+  snapCamera(): void {
+    const t = this.world.get<TransformFull>(this.id, C.Transform);
+    if (!t) return;
+    _target.set(t.x, t.y + CAM_HEIGHT, t.z);
+    const cp = Math.cos(this.pitch);
+    this.camera.position.set(
+      _target.x + Math.sin(this.yaw) * cp * CAM_DIST,
+      _target.y - Math.sin(this.pitch) * CAM_DIST,
+      -(_target.z + Math.cos(this.yaw) * cp * CAM_DIST),
+    );
+    toRender(_targetR, _target.x, _target.y, _target.z);
+    this.camera.setTarget(_targetR);
+  }
+}
