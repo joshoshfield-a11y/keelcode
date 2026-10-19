@@ -43,7 +43,8 @@ impl InputSys {
     }
 
     pub fn define_action(&mut self, name: &str) {
-        self.actions.insert(name.to_string(), ActionState::default());
+        self.actions
+            .insert(name.to_string(), ActionState::default());
     }
 
     pub fn define_axis(&mut self, name: &str, neg: &str, pos: &str) {
@@ -64,11 +65,14 @@ impl InputSys {
         struct Script {
             events: Vec<ScriptEvent>,
         }
-        let script: Script =
-            serde_json::from_str(json).map_err(|e| format!("input script is not valid JSON: {e}"))?;
+        let script: Script = serde_json::from_str(json)
+            .map_err(|e| format!("input script is not valid JSON: {e}"))?;
         for e in &script.events {
             if !self.actions.contains_key(&e.action) {
-                return Err(format!("input script references unknown action '{}'", e.action));
+                return Err(format!(
+                    "input script references unknown action '{}'",
+                    e.action
+                ));
             }
         }
         let mut events: Vec<InputEvent> = script

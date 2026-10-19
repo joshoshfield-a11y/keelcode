@@ -33,8 +33,8 @@ pub fn hash_seed(master: u32, salt: &str) -> u32 {
         h = h.wrapping_mul(0x0100_0193);
     }
     let mut m: i32 = (master as i32) ^ (h as i32);
-    m = ((m as u32 ^ ((m as u32) >> 16)) as i32).wrapping_mul(0x45D9_F3Bu32 as i32);
-    m = ((m as u32 ^ ((m as u32) >> 16)) as i32).wrapping_mul(0x45D9_F3Bu32 as i32);
+    m = ((m as u32 ^ ((m as u32) >> 16)) as i32).wrapping_mul(0x045D_9F3Bu32 as i32);
+    m = ((m as u32 ^ ((m as u32) >> 16)) as i32).wrapping_mul(0x045D_9F3Bu32 as i32);
     m ^= ((m as u32) >> 16) as i32;
     m as u32
 }
