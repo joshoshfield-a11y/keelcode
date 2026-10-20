@@ -40,9 +40,9 @@
     {
       "n": 6,
       "name": "Pointer-lock camera-swing fix (ts-three + ts-babylon demos)",
-      "status": "briefed",
+      "status": "in_progress_external",
       "brief": "workspace/game-kb/WAVE6-BRIEF.md",
-      "notes": "Briefed 2026-10-20. Deliberately NOT queued: it unfreezes Wave 1 demo behavior (ADR-0009), which is the user explicit call. Status briefed keeps the runner from auto-launching. Launches only on his word."
+      "notes": "Launched 2026-10-20 on the user word by the parent agent on branch wave-6; the wave runner must not touch it. Brief: workspace/game-kb/WAVE6-BRIEF.md."
     }
   ]
 }
