@@ -36,6 +36,13 @@
       "status": "green",
       "brief": "workspace/game-kb/WAVE5-BRIEF.md",
       "notes": "COMPLETE + MERGED to master 2026-10-20 (user word). Cargo-aware keel CLI 15/15, smoke --json skipped flag (contract 3/3, full smoke exit 0), baker dist_hashes ADR 0015 (7/7). Post-merge gates re-verified on master: CLI 15/15, baker 7/7. First post-merge run failed ENOSPC \u2014 /tmp tmpfs (512M) was full of orphaned test scratch; cleared, re-run green. Not a code issue."
+    },
+    {
+      "n": 6,
+      "name": "Pointer-lock camera-swing fix (ts-three + ts-babylon demos)",
+      "status": "briefed",
+      "brief": "workspace/game-kb/WAVE6-BRIEF.md",
+      "notes": "Briefed 2026-10-20. Deliberately NOT queued: it unfreezes Wave 1 demo behavior (ADR-0009), which is the user explicit call. Status briefed keeps the runner from auto-launching. Launches only on his word."
     }
   ]
 }
