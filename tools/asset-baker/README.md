@@ -21,10 +21,14 @@ converters the baker copies through and says so.
 
 Every manifest entry carries `{id, type, source_hash, dist_hash,
 lod_tiers, budget_cost}` per `framework/schema/asset-manifest.schema.json`.
+Since baker 1.1.0 (Wave 5, ADR 0015) entries also carry `dist_hashes`:
+a map of every emitted dist file (primary + variants, e.g. the WebP)
+to its sha256, keyed by file name. `dist_hash` remains the primary
+file's hash for backward compatibility.
 After writing, the baker re-reads the manifest, hand-validates every
 entry (required fields, id pattern, type enum, 64-char hex hashes), and
-re-hashes every dist file from disk. A missing or hash-mismatched asset
-fails the run (exit 1) before any backend boots.
+re-hashes every dist file from disk — variants included. A missing or
+hash-mismatched asset fails the run (exit 1) before any backend boots.
 
 ## Tests
 

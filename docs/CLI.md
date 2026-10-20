@@ -7,7 +7,9 @@ arg parsing in `tools/keel-cli/bin/keel.mjs`.
 
 keel finds the repo root by walking up from the current directory until it
 sees `framework/SPEC.md`. Project commands (`dev`/`build`/`test`) run in the
-nearest directory containing a `package.json` (a scaffolded game).
+nearest directory containing a `package.json` or a `Cargo.toml` (a
+scaffolded game) — whichever marker is found first walking up decides the
+project kind.
 
 ## Subcommands
 
@@ -24,9 +26,27 @@ Exit 1 on an unknown `--backend` (valid list is printed).
 
 ### keel dev / keel build / keel test
 
-Unchanged from before Wave 4: `npx vite` / `npx tsc --noEmit && npx vite
-build` / `npx vitest run`, all in the nearest `package.json` directory.
-These are TS-project commands — they do NOT know about cargo.
+Project-kind aware since Wave 5. The nearest marker walking up from the
+current directory decides:
+
+**npm projects** (`package.json`) — unchanged: `npx vite` /
+`npx tsc --noEmit && npx vite build` / `npx vitest run`.
+
+**Cargo projects** (`Cargo.toml`, i.e. an rs-core scaffold):
+
+| Command | Routes to |
+| ------- | --------- |
+| `keel build` | `cargo build` |
+| `keel test` | `cargo test` |
+| `keel dev` | `cargo run --bin <headless bin>` |
+
+For `dev`, keel reads the project's `Cargo.toml` and picks the first
+`[[bin]]` that is not `keel-desktop` (falling back to the `[package]`
+name). The desktop renderer is a separate binary that needs a
+display/GPU, so `keel dev` prints a note —
+`cargo run --bin keel-desktop` — instead of launching it. Cargo's exit
+codes propagate verbatim (a failing `cargo test` exits 101 through keel,
+a bin exiting 3 exits 3), per the ADR 0014 exit-code discipline.
 
 ### keel smoke [--backend \<name>] [--json] [--skip-e2e]
 
@@ -102,9 +122,9 @@ is propagated. Unknown subs are rejected by room.sh itself.
 keel new my-game --backend ts-babylon
 cd my-game && npm install && keel dev
 
-# New Rust backend scaffold (run it with cargo, not keel dev/build/test)
+# New Rust backend scaffold (keel dev/build/test route to cargo here)
 keel new my-rs-game --backend rs-core
-cd my-rs-game && cargo build
+cd my-rs-game && keel build && keel test && keel dev
 
 # Perf both TS backends (default)
 keel perf

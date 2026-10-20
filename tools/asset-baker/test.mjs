@@ -33,10 +33,18 @@ function scratch(name) {
   return dir;
 }
 
-function runBake(srcDir, outDir, extra = []) {
+function runBake(srcDir, outDir, extra = [], env = {}) {
   return spawnSync(process.execPath, [BAKE, srcDir, '--out', outDir, ...extra], {
     encoding: 'utf8',
+    env: { ...process.env, ...env },
   });
+}
+
+function sha256Of(path) {
+  const r = spawnSync(process.execPath, ['-e',
+    `console.log(require("crypto").createHash("sha256").update(require("fs").readFileSync(${JSON.stringify(path)})).digest("hex"))`,
+  ], { encoding: 'utf8' });
+  return r.stdout.trim();
 }
 
 function validateEntry(e) {
@@ -49,6 +57,13 @@ function validateEntry(e) {
   assert.ok(HEX64.test(e.dist_hash), `bad dist_hash: ${e.dist_hash}`);
   assert.ok(Array.isArray(e.lod_tiers) && e.lod_tiers.length >= 1, 'bad lod_tiers');
   assert.ok(typeof e.budget_cost === 'number' && Number.isFinite(e.budget_cost), 'bad budget_cost');
+  // dist_hashes (Wave 5 / ADR 0015): non-empty name -> sha256 map that
+  // includes the primary file's dist_hash value.
+  assert.ok(typeof e.dist_hashes === 'object' && e.dist_hashes !== null && !Array.isArray(e.dist_hashes), 'bad dist_hashes');
+  const names = Object.keys(e.dist_hashes);
+  assert.ok(names.length >= 1, 'dist_hashes not empty');
+  for (const n of names) assert.ok(HEX64.test(e.dist_hashes[n]), `bad dist_hashes[${n}]`);
+  assert.ok(names.some((n) => e.dist_hashes[n] === e.dist_hash), 'dist_hashes includes dist_hash');
 }
 
 test('happy path: bake sample-assets, manifest validates, dist hashes match', () => {
@@ -83,7 +98,65 @@ test('happy path: bake sample-assets, manifest validates, dist hashes match', ()
   for (const e of manifest.assets) {
     assert.deepEqual(e.lod_tiers, ['src']);
   }
+  // copy-through mode: dist_hashes holds exactly the primary file,
+  // keyed by file name, with the same hash as dist_hash
+  for (const e of manifest.assets) {
+    const base = e.id.split('/').pop();
+    assert.deepEqual(Object.keys(e.dist_hashes), [`${base}.png`]);
+    assert.equal(e.dist_hashes[`${base}.png`], e.dist_hash);
+  }
+  assert.equal(manifest.baker_version, '1.1.0');
   assert.match(r.stdout, /validation passed/);
+});
+
+test('dist_hashes covers the WebP variant when a converter is present', () => {
+  // No real cwebp on this box: plant a fake one on PATH that writes a
+  // deterministic, env-controlled payload to the -o target. The baker
+  // probes `cwebp -version` and calls `cwebp -q 80 <src> -o <out>`.
+  const bin = scratch('fakebin');
+  writeFileSync(join(bin, 'cwebp'), `#!/bin/sh
+out=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "-o" ]; then out="$a"; fi
+  prev="$a"
+done
+if [ -n "$out" ]; then printf '%s' "$FAKE_CWEBP_PAYLOAD" > "$out"; fi
+exit 0
+`, { mode: 0o755 });
+  const env = { PATH: bin + ':' + process.env.PATH, FAKE_CWEBP_PAYLOAD: 'webp-payload-v1' };
+
+  const out1 = scratch('variant-out-1');
+  const r1 = runBake(SAMPLES, out1, [], env);
+  assert.equal(r1.status, 0, `bake failed: ${r1.stderr}\n${r1.stdout}`);
+  const m1 = JSON.parse(readFileSync(join(out1, 'asset-manifest.json'), 'utf8'));
+  assert.equal(m1.assets.length, 2);
+  for (const e of m1.assets) {
+    validateEntry(e);
+    const base = e.id.split('/').pop();
+    assert.deepEqual(e.lod_tiers, ['src', 'webp']);
+    assert.deepEqual(Object.keys(e.dist_hashes).sort(), [`${base}.png`, `${base}.webp`]);
+    // both recorded hashes match the files actually on disk
+    assert.equal(e.dist_hashes[`${base}.png`], sha256Of(join(out1, e.id + '.png')));
+    assert.equal(e.dist_hashes[`${base}.webp`], sha256Of(join(out1, e.id + '.webp')));
+    assert.equal(e.dist_hash, e.dist_hashes[`${base}.png`], 'dist_hash stays the primary hash');
+  }
+
+  // Change ONLY the variant payload: the variant's hash must move while
+  // the primary dist_hash stands still (the Wave 4 blind spot, closed).
+  const out2 = scratch('variant-out-2');
+  const r2 = runBake(SAMPLES, out2, [], { ...env, FAKE_CWEBP_PAYLOAD: 'webp-payload-v2' });
+  assert.equal(r2.status, 0, `bake failed: ${r2.stderr}\n${r2.stdout}`);
+  const m2 = JSON.parse(readFileSync(join(out2, 'asset-manifest.json'), 'utf8'));
+  for (let i = 0; i < m1.assets.length; i++) {
+    const base = m1.assets[i].id.split('/').pop();
+    assert.equal(m2.assets[i].dist_hash, m1.assets[i].dist_hash, 'primary hash unchanged');
+    assert.notEqual(
+      m2.assets[i].dist_hashes[`${base}.webp`],
+      m1.assets[i].dist_hashes[`${base}.webp`],
+      'variant hash tracks variant content',
+    );
+  }
 });
 
 test('failure mode: nonexistent asset dir exits 1', () => {
