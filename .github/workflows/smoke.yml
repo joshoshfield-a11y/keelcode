@@ -51,7 +51,7 @@ jobs:
           npx vite preview -- --port 4174 --strictPort &
           SRV=$!
           for i in $(seq 1 60); do
-            curl -sf http://localhost:4174/ >/dev/null && break
+            curl -s http://localhost:4174/ >/dev/null && break
             sleep 1
           done
           node tools/perf-harness/measure.mjs
