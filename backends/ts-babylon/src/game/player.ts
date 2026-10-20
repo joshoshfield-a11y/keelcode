@@ -24,12 +24,12 @@
  *  kept in degrees in game logic and converted to radians at the Babylon
  *  camera boundary.
  *
- *  NOTE (frozen behavior, see docs/ADRs/0009-pointer-lock-quirk-babylon.md):
- *  the pointer-lock acquisition mousemove quirk from ADR-0007 is present
- *  here by design — Chromium dispatches a mousemove with the negated
- *  pre-lock cursor position on lock, which swings the camera via addLook().
- *  The harness suppresses mousemove; the game-side fix awaits the user's
- *  call. Do NOT "fix" it here. */
+ *  NOTE (pointer-lock acquisition burst, ADR-0016): Chromium dispatches
+ *  a mousemove with the negated pre-lock cursor position on lock. This
+ *  port originally carried the ts-three behavior of feeding it into
+ *  addLook() (camera swing before tick 0) by design (ADR-0009); since
+ *  Wave 6 both backends discard the first mousemove after each lock
+ *  acquisition — see attachLook() below and ADR-0016. */
 
 import * as BABYLON from '@babylonjs/core';
 import { C, World } from '../engine/ecs';
@@ -107,6 +107,9 @@ export class Player {
   private dragging = false;
   private lastPX = 0;
   private lastPY = 0;
+  /** Set on pointer-lock acquisition; the next locked mousemove is the
+   *  Chromium acquisition burst and is discarded (ADR-0016). */
+  private swallowLockBurst = false;
   private node: BABYLON.TransformNode;
   private isTouch = false;
 
@@ -188,10 +191,24 @@ export class Player {
         requestPointerLock(this.canvas);
       }
     });
-    // NOTE: the pointer-lock acquisition mousemove quirk (ADR-0007) flows
-    // through here by design; see the file header and ADR-0009.
+    // Pointer-lock acquisition burst (ADR-0016; supersedes the ADR-0009
+    // carry-over): on lock, Chromium dispatches a mousemove whose
+    // movementX/Y are the negated pre-lock cursor position. Fed into
+    // addLook() it swings the camera ~90° before tick 0, so the first
+    // mousemove after each lock acquisition is discarded. Only that one
+    // event is dropped — legitimate look input, fast flicks included,
+    // is never clamped or altered.
+    document.addEventListener('pointerlockchange', () => {
+      if (document.pointerLockElement === this.canvas) {
+        this.swallowLockBurst = true;
+      }
+    });
     document.addEventListener('mousemove', (e: MouseEvent) => {
       if (document.pointerLockElement === this.canvas) {
+        if (this.swallowLockBurst) {
+          this.swallowLockBurst = false;
+          return;
+        }
         this.addLook(e.movementX, e.movementY);
       } else if (this.dragging) {
         this.addLook((e.clientX - this.lastPX) * 1.6, (e.clientY - this.lastPY) * 1.6);

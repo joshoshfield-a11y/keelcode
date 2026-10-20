@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-10-19T13:33:02.286Z",
+  "measuredAt": "2026-10-20T13:55:08.307Z",
   "backend": "ts-babylon",
   "budgets": {
     "$comment": "Binding perf budgets (framework/SPEC.md section 4), applied to the ts-babylon backend. Binding rule: no wave may regress any number here without the regression being measured, disclosed, and explicitly waived by the user. Copied verbatim from tools/perf-harness/budgets.json (Wave 1).",
@@ -19,150 +19,150 @@
   "dpr": 1,
   "devicePixelRatio": 1,
   "frameTimeMs": {
-    "p50": 17.5999999998603,
-    "p95": 68.80000000004657,
-    "max": 183.4000000001397
+    "p50": 3.4000000001396984,
+    "p95": 17.199999999953434,
+    "max": 33.699999999953434
   },
   "headless": true,
   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
   "bundle": {
-    "bytes": 9477836,
+    "bytes": 9478057,
     "mb": 9.04,
     "files": [
       {
-        "file": "index-Ca5627N5.js",
-        "bytes": 7182081
+        "file": "index-CEvc_5GH.js",
+        "bytes": 7182352
       },
       {
         "file": "HavokPhysics-BqNY-4N9.wasm",
         "bytes": 2094563
       },
       {
-        "file": "meshBlending.fragment-BOU3WrKY.js",
+        "file": "meshBlending.fragment-Uacrk3BN.js",
         "bytes": 42585
       },
       {
-        "file": "meshBlending.fragment-BjaR-oLZ.js",
+        "file": "meshBlending.fragment-2UbaC_Vj.js",
         "bytes": 39459
       },
       {
-        "file": "ktxTextureLoader-BsRQqZvG.js",
+        "file": "ktxTextureLoader-B4Ew5YAl.js",
         "bytes": 16477
       },
       {
-        "file": "gpuRenderParticles.vertex-DWyYHeJ0.js",
+        "file": "gpuRenderParticles.vertex-B9VldCOq.js",
         "bytes": 9752
       },
       {
-        "file": "gaussianSplatting.vertex-DwhI_Bgl.js",
+        "file": "gaussianSplatting.vertex-CKX0UB-Z.js",
         "bytes": 8170
       },
       {
-        "file": "dds.pure-DnX7nFsj.js",
+        "file": "dds.pure-BkQthuJD.js",
         "bytes": 6997
       },
       {
-        "file": "gaussianSplatting.vertex-C9aF62aP.js",
+        "file": "gaussianSplatting.vertex-BRQh28ZN.js",
         "bytes": 6831
       },
       {
-        "file": "selectionOutline.fragment-B7ye10xW.js",
+        "file": "selectionOutline.fragment-B4h4DOy7.js",
         "bytes": 6267
       },
       {
-        "file": "subSurfaceScattering.fragment-OFd_bq_D.js",
+        "file": "subSurfaceScattering.fragment-CN4wwuJh.js",
         "bytes": 6014
       },
       {
-        "file": "subSurfaceScattering.fragment-DS9Qy8pF.js",
+        "file": "subSurfaceScattering.fragment-C5xlK6Dr.js",
         "bytes": 5393
       },
       {
-        "file": "selectionOutline.fragment-DiotX0Es.js",
+        "file": "selectionOutline.fragment-BDTLgkVc.js",
         "bytes": 4994
       },
       {
-        "file": "gaussianSplatting.fragment-BlIgyfFh.js",
+        "file": "gaussianSplatting.fragment-BeGg1TCr.js",
         "bytes": 3044
       },
       {
-        "file": "gaussianSplatting.fragment-DKgvTgYM.js",
+        "file": "gaussianSplatting.fragment-CKoRz6v9.js",
         "bytes": 2914
       },
       {
-        "file": "gpuRenderParticles.fragment-D7vErVaO.js",
+        "file": "gpuRenderParticles.fragment-DUiHnNsX.js",
         "bytes": 2592
       },
       {
-        "file": "iesTextureLoader-pRrgPG5l.js",
+        "file": "iesTextureLoader-C5txYa9y.js",
         "bytes": 2490
       },
       {
-        "file": "gaussianSplattingVoxel.vertex-qU4P-nH0.js",
+        "file": "gaussianSplattingVoxel.vertex-Cv0ua4R9.js",
         "bytes": 2473
       },
       {
-        "file": "selection.vertex-Dn4qFOzB.js",
+        "file": "selection.vertex-XX_s4Jlr.js",
         "bytes": 2459
       },
       {
-        "file": "webAudioBus-ynQ4Ziy-.js",
+        "file": "webAudioBus-BgiG9kYD.js",
         "bytes": 2349
       },
       {
-        "file": "selection.vertex-BsK9If4S.js",
+        "file": "selection.vertex-BtWoUEJk.js",
         "bytes": 2117
       },
       {
-        "file": "volumetricLightingRenderVolume.fragment-e1tQC8BH.js",
+        "file": "volumetricLightingRenderVolume.fragment-C0sqcXhb.js",
         "bytes": 1870
       },
       {
-        "file": "gaussianSplattingVoxel.fragment-DqgIOxjI.js",
+        "file": "gaussianSplattingVoxel.fragment-DL3tebYe.js",
         "bytes": 1757
       },
       {
-        "file": "gaussianSplattingVoxel.vertex-RYY5OXIK.js",
+        "file": "gaussianSplattingVoxel.vertex-BpEqDQso.js",
         "bytes": 1757
       },
       {
-        "file": "volumetricLightingRenderVolume.fragment-CpOP0D8k.js",
+        "file": "volumetricLightingRenderVolume.fragment-CVLUkG4w.js",
         "bytes": 1632
       },
       {
-        "file": "screenSpaceCurvature.fragment-DzFauU-m.js",
+        "file": "screenSpaceCurvature.fragment-CyO1xjiI.js",
         "bytes": 1597
       },
       {
-        "file": "gaussianSplattingVoxel.fragment-DJMJJBc1.js",
+        "file": "gaussianSplattingVoxel.fragment-Dx53178N.js",
         "bytes": 1431
       },
       {
-        "file": "noise.fragment-CsCRV40y.js",
+        "file": "noise.fragment-CxGMmtnF.js",
         "bytes": 1406
       },
       {
-        "file": "ddsTextureLoader-Dm2QOe2m.js",
+        "file": "ddsTextureLoader-C_qGajrB.js",
         "bytes": 1267
       },
       {
-        "file": "noise.fragment-lCxmEkSu.js",
+        "file": "noise.fragment-CRuMz9Rw.js",
         "bytes": 1248
       },
       {
-        "file": "selection.fragment-D_bWS6Pe.js",
+        "file": "selection.fragment-BES_zn_a.js",
         "bytes": 1239
       },
       {
-        "file": "basisTextureLoader-BnR80MkF.js",
+        "file": "basisTextureLoader-Tc9zjucL.js",
         "bytes": 1188
       },
       {
-        "file": "selection.fragment-DB-cN8Aa.js",
+        "file": "selection.fragment-nXhXTcjQ.js",
         "bytes": 1020
       },
       {
-        "file": "volumetricLightingBlendVolume.fragment-D5TNEjTT.js",
+        "file": "volumetricLightingBlendVolume.fragment-CyjlY5CV.js",
         "bytes": 1013
       },
       {
@@ -170,15 +170,15 @@
         "bytes": 960
       },
       {
-        "file": "webAudioMainBus-iXrQadwc.js",
+        "file": "webAudioMainBus-CETrUF99.js",
         "bytes": 945
       },
       {
-        "file": "iblCopyVoxelBufferToGrid.compute-COnfQXsV.js",
+        "file": "iblCopyVoxelBufferToGrid.compute-ufYnJlC-.js",
         "bytes": 837
       },
       {
-        "file": "volumetricLightingBlendVolume.fragment-BJUgRXF2.js",
+        "file": "volumetricLightingBlendVolume.fragment-B9OW2RCw.js",
         "bytes": 814
       },
       {
@@ -186,43 +186,43 @@
         "bytes": 774
       },
       {
-        "file": "lod3D.fragment-BCWcIQJ6.js",
+        "file": "lod3D.fragment-Dt6CGC38.js",
         "bytes": 766
       },
       {
-        "file": "volumetricLightingRenderVolume.vertex-BgleQPdJ.js",
+        "file": "volumetricLightingRenderVolume.vertex-DMKM4R0f.js",
         "bytes": 672
       },
       {
-        "file": "lod3D.fragment-BfYyw4Ff.js",
+        "file": "lod3D.fragment-By6nhsUF.js",
         "bytes": 624
       },
       {
-        "file": "envTextureLoader-BwEZF94r.js",
+        "file": "envTextureLoader-urg5hZOq.js",
         "bytes": 582
       },
       {
-        "file": "volumetricLightingRenderVolume.vertex-BC9Tmh7t.js",
+        "file": "volumetricLightingRenderVolume.vertex-Bhw3XSHB.js",
         "bytes": 580
       },
       {
-        "file": "hdrTextureLoader-D6MlFQlc.js",
+        "file": "hdrTextureLoader-OfMHLQJJ.js",
         "bytes": 536
       },
       {
-        "file": "oitFinalSimpleBlend.fragment-BR8KLAGE.js",
+        "file": "oitFinalSimpleBlend.fragment-BKAgOs2g.js",
         "bytes": 451
       },
       {
-        "file": "oitFinalSimpleBlend.fragment-CxeBlBLz.js",
+        "file": "oitFinalSimpleBlend.fragment-DYyy53RM.js",
         "bytes": 379
       },
       {
-        "file": "tgaTextureLoader-CSMCYw8j.js",
+        "file": "tgaTextureLoader-CcpDsSXb.js",
         "bytes": 314
       },
       {
-        "file": "abstractAudioBus-BZLfBOoU.js",
+        "file": "abstractAudioBus-DFUwuooY.js",
         "bytes": 106
       }
     ]

@@ -72,6 +72,9 @@ export class Player {
   private dragging = false;
   private lastPX = 0;
   private lastPY = 0;
+  /** Set on pointer-lock acquisition; the next locked mousemove is the
+   *  Chromium acquisition burst and is discarded (ADR-0016). */
+  private swallowLockBurst = false;
   private node: THREE.Group;
   private isTouch = false;
 
@@ -153,8 +156,24 @@ export class Player {
         requestPointerLock(this.canvas);
       }
     });
+    // Pointer-lock acquisition burst (ADR-0016; supersedes the ADR-0009
+    // carry-over): on lock, Chromium dispatches a mousemove whose
+    // movementX/Y are the negated pre-lock cursor position. Fed into
+    // addLook() it swings the camera ~90° before tick 0, so the first
+    // mousemove after each lock acquisition is discarded. Only that one
+    // event is dropped — legitimate look input, fast flicks included,
+    // is never clamped or altered.
+    document.addEventListener('pointerlockchange', () => {
+      if (document.pointerLockElement === this.canvas) {
+        this.swallowLockBurst = true;
+      }
+    });
     document.addEventListener('mousemove', (e: MouseEvent) => {
       if (document.pointerLockElement === this.canvas) {
+        if (this.swallowLockBurst) {
+          this.swallowLockBurst = false;
+          return;
+        }
         this.addLook(e.movementX, e.movementY);
       } else if (this.dragging) {
         this.addLook((e.clientX - this.lastPX) * 1.6, (e.clientY - this.lastPY) * 1.6);
