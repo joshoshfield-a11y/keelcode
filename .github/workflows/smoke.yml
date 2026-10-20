@@ -17,6 +17,7 @@ jobs:
       - run: cd backends/ts-three && npm run build
       - run: test -f backends/ts-three/dist/index.html
       - run: cd backends/ts-three && npx vitest run
+      - run: cd backends/ts-three && npx playwright install --with-deps chromium
       - run: cd backends/ts-three && node ../../tools/perf-harness/perf.mjs --tier desktop
 
   smoke-rs-core:
@@ -39,12 +40,12 @@ jobs:
         with:
           node-version: 22
       - run: cd backends/ts-babylon && npm ci
+      - run: cd backends/ts-babylon && npm run build
       - run: cd backends/ts-babylon && npx tsc --noEmit
       - run: cd backends/ts-babylon && npx vitest run
       - run: cd backends/ts-babylon && npx playwright install --with-deps chromium
       - run: cd backends/ts-babylon && npx playwright test
       - run: cd backends/ts-babylon && npx playwright test e2e/parity-record.spec.ts
-      - run: cd backends/ts-babylon && npm run build
       - run: |
           cd backends/ts-babylon
           npx vite preview -- --port 4174 --strictPort &
