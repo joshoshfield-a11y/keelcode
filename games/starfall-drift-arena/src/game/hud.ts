@@ -11,8 +11,8 @@ const CSS = `
 .khud { position:absolute; inset:0; pointer-events:none; z-index:10;
   font-family:system-ui,'Segoe UI',sans-serif; color:#fff; }
 .khud .tl { position:absolute; top:14px; left:14px; display:flex; flex-direction:column; gap:6px; }
-.khud .hpwrap { width:240px; height:18px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.35);
-  border-radius:9px; overflow:hidden; position:relative; }
+.khud .hpwrap { width:240px; height:18px; background:rgba(6,10,16,.55); border:1px solid rgba(140,210,255,.35);
+  border-radius:9px; overflow:hidden; position:relative; backdrop-filter:blur(4px); }
 .khud .hpbar { height:100%; width:100%; background:linear-gradient(90deg,#3fae5a,#7ce495);
   transition:width .18s ease-out; }
 .khud .hpbar.low { background:linear-gradient(90deg,#c0392b,#e67e22); }
@@ -24,9 +24,9 @@ const CSS = `
   text-shadow:0 1px 3px #000; }
 .khud .quests { position:absolute; top:14px; right:14px; display:flex; flex-direction:column; gap:4px;
   max-width:280px; }
-.khud .quest { font-size:12.5px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.25);
-  border-radius:7px; padding:5px 9px; text-shadow:0 1px 3px #000; }
-.khud .quest .qtitle { font-weight:700; }
+.khud .quest { font-size:12.5px; background:rgba(6,12,20,.55); border:1px solid rgba(140,210,255,.28);
+  border-radius:7px; padding:5px 9px; text-shadow:0 1px 3px #000; backdrop-filter:blur(4px); }
+.khud .quest .qtitle { font-weight:700; color:#9fe8ff; }
 .khud .quest.done { border-color:#7ce495; color:#bdf3c9; }
 .khud .docked { position:absolute; bottom:12px; left:14px; font-size:12px; font-weight:700;
   color:#9fd0ff; text-shadow:0 1px 3px #000; }

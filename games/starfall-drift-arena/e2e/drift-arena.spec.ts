@@ -14,7 +14,11 @@
 import { test, expect, type Page } from '@playwright/test';
 import { waitForKeel, collectConsoleErrors } from './helpers';
 
-test.setTimeout(180000);
+// Wave 4d-gfx: raised from 180s — the sandbox renders via SwiftShader
+// (software GL), and the bloom + shadow passes make each live-rendered
+// frame seconds long. Assertions unchanged; on GPU hardware the whole
+// playthrough completes in ~1-2 min.
+test.setTimeout(1200000);
 
 interface Snap {
   credits: number;
@@ -167,10 +171,15 @@ test('drift arena playthrough: mine, fight, dock, trade, upgrade, save, reload',
 
   // 4. fight: move to clear space (inside the rock ring), crippled pirate
   //    parked point-blank ahead (lasers connect before it can strafe clear);
-  //    click-volleys, stepped, until the kill lands
+  //    click-volleys, stepped, until the kill lands.
+  //    Wave 4d-gfx robustness: up to 8 volleys, re-staging the pirate each
+  //    volley — under SwiftShader the live screenshot segments advance the
+  //    sim by a load-dependent number of ticks, so the pirate's AI state at
+  //    first staging varies and it sometimes strafes clear in time (saw
+  //    2/4 runs miss all 4 volleys). The kill assertion below is unchanged.
   await placePlayer(page, 0, 0, 100, 0, 0);
-  await stagePirateAhead(page, 8);
-  for (let volley = 0; volley < 4; volley++) {
+  for (let volley = 0; volley < 8; volley++) {
+    await stagePirateAhead(page, 8);
     await page.mouse.down();
     await step(page, 4);
     await page.mouse.up();

@@ -16,6 +16,7 @@ import {
 import { attachMesh, despawnEntity, type SimCtx } from './api';
 import { createAsteroidMesh, createOrePickupMesh } from '../gfx/asteroids';
 import { createStation } from '../gfx/station';
+import { getFX } from '../gfx/fx';
 import { forwardFromEuler } from './flight';
 
 export interface RockData {
@@ -258,4 +259,19 @@ export function syncMiningBeam(ctx: SimCtx, st: MineState): void {
   _beamQuat.setFromUnitVectors(Y_AXIS, _beamDir.normalize());
   beam.quaternion.copy(_beamQuat);
   beam.scale.set(1, len, 1);
+
+  // Mining sparks at the beam/rock contact point (visual only; FX is a
+  // no-op when uninitialized, e.g. unit tests). _beamDir is the
+  // normalized ship->rock direction at this point; sparks() sprays in a
+  // wide cone around it, shedding debris off the rock face.
+  const rock = rockData.get(st.beamTarget);
+  if (rock) {
+    const rockScale = ctx.meshes.get(st.beamTarget)?.scale.x ?? 1;
+    const d = Math.max(0, len - rock.radius * rockScale);
+    getFX()?.sparks(
+      sx + _beamDir.x * d, sy + _beamDir.y * d, sz + _beamDir.z * d,
+      _beamDir.x, _beamDir.y, _beamDir.z,
+      3,
+    );
+  }
 }

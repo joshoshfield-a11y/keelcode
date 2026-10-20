@@ -11,6 +11,7 @@ import {
 import {
   attachMesh, despawnEntity, type SimCtx,
 } from './api';
+import { getFX } from '../gfx/fx';
 
 /** Test helper: clear module-level projectile/FX state between tests. */
 export function resetProjectileState(): void {
@@ -41,8 +42,53 @@ boltGeo.rotateX(Math.PI / 2);
 const playerBoltMat = new THREE.MeshBasicMaterial({ color: '#cfe0ff' });
 const enemyBoltMat = new THREE.MeshBasicMaterial({ color: '#ffc9a8' });
 
+/** Radial glow sprite texture for bolts. Headless-safe: without a DOM
+ * (unit tests) falls back to a 1x1 white DataTexture. */
+let boltGlowTex: THREE.Texture | null = null;
+function getBoltGlowTexture(): THREE.Texture {
+  if (boltGlowTex) return boltGlowTex;
+  if (typeof document === 'undefined') {
+    boltGlowTex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+    boltGlowTex.needsUpdate = true;
+    return boltGlowTex;
+  }
+  const s = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = s;
+  canvas.height = s;
+  const g = canvas.getContext('2d')!;
+  const grad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.35, 'rgba(255,255,255,0.65)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, s, s);
+  boltGlowTex = new THREE.CanvasTexture(canvas);
+  boltGlowTex.colorSpace = THREE.SRGBColorSpace;
+  return boltGlowTex;
+}
+
+const playerGlowMat = new THREE.SpriteMaterial({
+  color: '#7fb2ff', transparent: true, opacity: 0.85,
+  blending: THREE.AdditiveBlending, depthWrite: false,
+});
+const enemyGlowMat = new THREE.SpriteMaterial({
+  color: '#ffb37f', transparent: true, opacity: 0.85,
+  blending: THREE.AdditiveBlending, depthWrite: false,
+});
+
 function makeBolt(fromPlayer: boolean): THREE.Mesh {
-  return new THREE.Mesh(boltGeo, fromPlayer ? playerBoltMat : enemyBoltMat);
+  const bolt = new THREE.Mesh(boltGeo, fromPlayer ? playerBoltMat : enemyBoltMat);
+  // Additive glow halo around the bolt core (visual only).
+  const glowMat = fromPlayer ? playerGlowMat : enemyGlowMat;
+  if (!glowMat.map) {
+    glowMat.map = getBoltGlowTexture();
+    glowMat.needsUpdate = true;
+  }
+  const glow = new THREE.Sprite(glowMat);
+  glow.scale.set(1.6, 1.6, 1);
+  bolt.add(glow);
+  return bolt;
 }
 
 export function fireLaser(
@@ -78,13 +124,19 @@ export function spawnExplosion(ctx: SimCtx, x: number, y: number, z: number, sca
     [C.Lifetime]: { t: 0, max: 0.45 } as LifetimeC,
     [C.Renderable]: { mesh: 'prop', tint: 0xffffff, visible: true },
   });
+  // Additive flash sphere (visual only) + a pooled particle burst.
   const mat = new THREE.MeshBasicMaterial({
-    color: '#e8ecf2', transparent: true, opacity: 0.9, depthWrite: false,
+    color: '#ffb36b', transparent: true, opacity: 0.9, depthWrite: false,
+    blending: THREE.AdditiveBlending,
   });
   const m = new THREE.Mesh(new THREE.SphereGeometry(2 * scale, 10, 8), mat);
   m.userData['fxScale'] = scale;
   attachMesh(ctx, id, m);
   fxData.set(id, { t: 0, max: 0.45 });
+  getFX()?.burst(x, y, z, {
+    count: 42, color: ['#ffc98a', '#ff7a2a', '#ffffff'],
+    speed: 30, life: 0.75, size: 2.4,
+  });
 }
 
 function killTarget(ctx: SimCtx, id: number): void {

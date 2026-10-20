@@ -14,14 +14,14 @@
  */
 
 import * as THREE from 'three';
-import { createWorld, type World, C, type TransformC } from './engine/ecs';
+import { createWorld, type World, C, type TransformC, type VelocityC } from './engine/ecs';
 import { createLoop, type Loop } from './engine/loop';
 import { createInput, type InputSys } from './engine/input';
 import { createSave, type SaveSys } from './engine/save';
 import {
   createGameState, type GameAPI, type SimCtx,
 } from './game/api';
-import { createFlightSystem, spawnPlayerShip, clampLookDelta } from './game/flight';
+import { createFlightSystem, spawnPlayerShip, clampLookDelta, forwardFromEuler } from './game/flight';
 import { createPirateSystem, spawnPirateWave } from './game/pirates';
 import { createProjectileSystem } from './game/projectiles';
 import {
@@ -34,6 +34,11 @@ import { createHUD, type HUD } from './game/hud';
 import { createScreens, type Screens } from './game/screens';
 import { createStationUI, type StationUI } from './game/station';
 import { createStarfield } from './gfx/starfield';
+import { TIER } from './gfx/quality';
+import { setupEnvironment } from './gfx/environment';
+import { syncRockInstances } from './gfx/asteroids';
+import { initFX, getFX } from './gfx/fx';
+import { createPostFX, type PostFX } from './gfx/postfx';
 
 declare global {
   interface Window {
@@ -47,6 +52,55 @@ declare global {
 const _camDesired = new THREE.Vector3();
 const _camLook = new THREE.Vector3();
 const _shipFwd = new THREE.Vector3();
+const _tipWorld = new THREE.Vector3();
+const _trailVel = new THREE.Vector3();
+
+/** Camera shake amplitude (wave 4d-gfx): set by damagePlayer, decayed in
+ *  postupdate, applied as a small positional jitter in the chase camera. */
+const camShake = { amp: 0 };
+
+/** Lazily flag every entity mesh for shadow casting/receiving (once each).
+ *  Transparent materials (explosion flashes) and non-mesh objects are
+ *  skipped; the mining beam and sky/FX objects never enter ctx.meshes. */
+function ensureShadowFlags(ctx: SimCtx): void {
+  for (const obj of ctx.meshes.values()) {
+    obj.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh || m.userData['shadowDone']) return;
+      m.userData['shadowDone'] = true;
+      const mat = m.material as THREE.Material | undefined;
+      if (mat && !mat.transparent) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+    });
+  }
+}
+
+/** Thruster trail particles from ship engine tips (wave 4d-gfx, visual only). */
+function emitThrusterTrails(ctx: SimCtx): void {
+  const fx = getFX();
+  if (!fx || ctx.state.docked) return;
+  const emit = (id: number, color: string, minSpeed: number) => {
+    const mesh = ctx.meshes.get(id);
+    const v = ctx.world.get<VelocityC>(id, C.Velocity);
+    const t = ctx.world.get<TransformC>(id, C.Transform);
+    if (!mesh || !v || !t) return;
+    const speed = Math.hypot(v.x, v.y, v.z);
+    if (speed < minSpeed) return;
+    forwardFromEuler(t.rx, t.ry, _shipFwd);
+    _trailVel.copy(_shipFwd).multiplyScalar(-speed * 0.35);
+    mesh.updateMatrixWorld(true);
+    const tips = (mesh.userData['engineTips'] as THREE.Vector3[] | undefined)
+      ?? (mesh.userData['engineTip'] ? [mesh.userData['engineTip'] as THREE.Vector3] : []);
+    for (const tip of tips) {
+      _tipWorld.copy(tip).applyMatrix4(mesh.matrixWorld);
+      fx.trail(_tipWorld.x, _tipWorld.y, _tipWorld.z, _trailVel.x, _trailVel.y, _trailVel.z, color, 1.7);
+    }
+  };
+  emit(ctx.state.playerShipId, '#ffa04a', 5);
+  for (const id of ctx.world.query(C.Enemy, C.Transform)) emit(id, '#ff8a3a', 2);
+}
 
 /** Pinned run seed — quest flavor text only; pinned numbers unaffected. */
 const SEED = 20261019;
@@ -95,13 +149,18 @@ function updateChaseCamera(ctx: SimCtx, rdt: number): void {
   cam.position.lerp(_camDesired, k);
   _camLook.set(t.x + _shipFwd.x * 26, t.y + _shipFwd.y * 26, t.z + _shipFwd.z * 26);
   cam.lookAt(_camLook);
+  if (camShake.amp > 0.003) {
+    cam.position.x += (Math.random() - 0.5) * camShake.amp * 1.5;
+    cam.position.y += (Math.random() - 0.5) * camShake.amp * 1.5;
+    cam.position.z += (Math.random() - 0.5) * camShake.amp * 1.5;
+  }
 }
 
 async function boot(): Promise<void> {
   const app = document.getElementById('app')!;
   const ui = document.getElementById('ui')!;
   const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, TIER === 'desktop' ? 2 : 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   app.appendChild(renderer.domElement);
@@ -114,14 +173,13 @@ async function boot(): Promise<void> {
   );
   camera.position.set(0, 6, 18);
 
-  scene.add(new THREE.AmbientLight(0x8a93a6, 0.85));
-  const sun = new THREE.DirectionalLight(0xfff2df, 1.6);
-  sun.position.set(300, 400, 200);
-  scene.add(sun);
-  const rim = new THREE.DirectionalLight(0x9fb6ff, 0.5);
-  rim.position.set(-400, -200, -300);
-  scene.add(rim);
+  // Wave 4d-gfx: environment (hemisphere + sun w/ desktop-tier shadows +
+  // rim, fog, RoomEnvironment IBL) then the layered sky backdrop.
+  const { sun } = setupEnvironment(scene, renderer, TIER);
+  scene.add(sun.target);
   scene.add(createStarfield());
+  initFX(scene);
+  const postfx: PostFX | null = createPostFX(renderer, scene, camera, TIER);
 
   const world: World = createWorld();
   const loop: Loop = createLoop();
@@ -189,6 +247,7 @@ async function boot(): Promise<void> {
     if (dead) return;
     state.hull = Math.max(0, state.hull - n);
     hud.flashDamage();
+    camShake.amp = Math.min(1.2, camShake.amp + 0.5);
     if (state.hull <= 0) onPlayerDeath();
   };
   api.getUpgrades = () => ({ ...economy.upgrades });
@@ -323,11 +382,27 @@ async function boot(): Promise<void> {
     currentTick = c.tick;
     syncMeshes(ctx);
     syncMiningBeam(ctx, mineState);
+    // Wave 4d-gfx visual drivers (no sim state touched):
+    syncRockInstances(scene);
+    getFX()?.update(c.dt);
+    ensureShadowFlags(ctx);
+    emitThrusterTrails(ctx);
+    camShake.amp *= Math.exp(-5.5 * c.dt);
+    // Shadow frustum (±160) follows the player so shadows stay crisp.
+    const pt = ctx.world.get<TransformC>(ctx.state.playerShipId, C.Transform);
+    if (pt) {
+      sun.position.set(pt.x + 300, pt.y + 400, pt.z + 200);
+      sun.target.position.set(pt.x, pt.y, pt.z);
+      sun.target.updateMatrixWorld();
+    }
     updateChaseCamera(ctx, c.dt);
     stationAnim?.(c.dt, c.tick / 60);
     hud.update(c.dt);
   });
-  loop.on('render', () => renderer.render(scene, camera));
+  loop.on('render', () => {
+    if (postfx) postfx.render();
+    else renderer.render(scene, camera);
+  });
 
   window.__keel = { world, loop, input, renderer, playerId: state.playerShipId, game: api };
 
@@ -335,6 +410,7 @@ async function boot(): Promise<void> {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    postfx?.setSize(window.innerWidth, window.innerHeight);
   });
 
   // Title first — Launch/Continue start the sim.

@@ -14,7 +14,8 @@ const CSS = `
 .kscreen.hidden { display:none; }
 .kcard { text-align:center; max-width:480px; padding:34px 44px; background:rgba(16,22,30,.94);
   border:1px solid rgba(255,255,255,.14); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.5); }
-.kcard h1 { margin:0 0 6px; font-size:40px; letter-spacing:3px; }
+.kcard h1 { margin:0 0 6px; font-size:40px; letter-spacing:3px;
+  text-shadow:0 0 26px rgba(53,224,255,.35), 0 2px 6px rgba(0,0,0,.6); }
 .kcard h1 .star { color:#ffd166; }
 .kcard .sub { margin:0 0 18px; opacity:.7; font-size:14px; }
 .kcontrols { text-align:left; font-size:13.5px; line-height:1.75; opacity:.85; margin:0 auto 6px;
