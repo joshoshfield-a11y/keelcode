@@ -1,34 +1,34 @@
 {
- "_comment": "Wave queue. The runner launches the first 'queued' wave that has a brief file and whose predecessors are 'green'. Never edit status by hand mid-wave; the tick agent owns this file.",
- "version": 1,
- "waves": [
-  {
-   "brief": null,
-   "n": 1,
-   "name": "TS/three.js reference backend",
-   "notes": "Complete 2026-10-19. Gates: tsc clean, 53/53 vitest, 3/3 e2e, zero console errors.",
-   "status": "green"
-  },
-  {
-   "brief": "workspace/game-kb/WAVE2-BRIEF.md",
-   "n": 2,
-   "name": "Rust headless sim + wgpu desktop",
-   "notes": "Complete 2026-10-19. Gates: 59/59 cargo test, 0 clippy warnings, fmt clean, parity 4/4.",
-   "status": "green"
-  },
-  {
-   "brief": "workspace/game-kb/WAVE3-BRIEF.md",
-   "n": 3,
-   "name": "Babylon.js backend",
-   "notes": "Complete 2026-10-19 (external coordinator, committed bd06b67). Gates: tsc clean, 53/53 vitest, 6/6 Playwright e2e zero console errors, vite build clean (9.04 MB). Backend-local vectors recorded. Regressions disclosed: draw calls 65 vs 15-27 (under 150 budget), bundle 9.04MB vs 2.6MB — awaiting user's waiver. Frame p95 headless-only; S25 check still open.",
-   "status": "green"
-  },
-  {
-   "brief": "workspace/game-kb/WAVE4-BRIEF.md",
-   "n": 4,
-   "name": "Convergence",
-   "notes": "4a-4c MERGED to main 2026-10-19 (a571caa). 4d COMPLETE on branch wave-4d (not merged — waits on user's word): STARFALL: Drift Arena, 3D vertical slice on ts-three built via the keel CLI. Gates verified by parent 2026-10-19: tsc clean, vitest 95/95 (7 files), Playwright e2e playthrough 1/1 (mine/fight/dock/trade/upgrade/save/reload, zero console errors), 5 gameplay screenshots delivered. Original ~/workspace/starfall/ untouched by 4d (its own upgrade loop was active separately). Runner must not touch this wave.",
-   "status": "in_progress_external"
-  }
- ]
+  "_comment": "Wave queue. The runner launches the first 'queued' wave that has a brief file and whose predecessors are 'green'. Never edit status by hand mid-wave; the tick agent owns this file.",
+  "version": 1,
+  "waves": [
+    {
+      "brief": null,
+      "n": 1,
+      "name": "TS/three.js reference backend",
+      "notes": "Complete 2026-10-19. Gates: tsc clean, 53/53 vitest, 3/3 e2e, zero console errors.",
+      "status": "green"
+    },
+    {
+      "brief": "workspace/game-kb/WAVE2-BRIEF.md",
+      "n": 2,
+      "name": "Rust headless sim + wgpu desktop",
+      "notes": "Complete 2026-10-19. Gates: 59/59 cargo test, 0 clippy warnings, fmt clean, parity 4/4.",
+      "status": "green"
+    },
+    {
+      "brief": "workspace/game-kb/WAVE3-BRIEF.md",
+      "n": 3,
+      "name": "Babylon.js backend",
+      "notes": "Complete 2026-10-19 (external coordinator, committed bd06b67). Gates: tsc clean, 53/53 vitest, 6/6 Playwright e2e zero console errors, vite build clean (9.04 MB). Backend-local vectors recorded. Regressions disclosed: draw calls 65 vs 15-27 (under 150 budget), bundle 9.04MB vs 2.6MB \u2014 awaiting user's waiver. Frame p95 headless-only; S25 check still open.",
+      "status": "green"
+    },
+    {
+      "brief": "workspace/game-kb/WAVE4-BRIEF.md",
+      "n": 4,
+      "name": "Convergence",
+      "notes": "4a-4c merged to main (a571caa). 4d Drift Arena complete on branch wave-4d (63adf9e), gates verified, awaiting merge word. 4d-gfx graphics overhaul complete on branch wave-4d-gfx (43132f4, stacked on wave-4d): ACES+IBL lighting, bloom (desktop tier), nebula dome + gas giant, merged-geometry ships, instanced asteroids, pooled particles; gates verified by parent (tsc clean, vitest 95/95, e2e 1/1 zero console errors); perf headless full-frame draws 134->106 (budget 150), tris 10532->31764 (budget 300k). Awaiting merge word for wave-4d + wave-4d-gfx.",
+      "status": "complete"
+    }
+  ]
 }
