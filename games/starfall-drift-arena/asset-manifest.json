@@ -1,0 +1,45 @@
+{
+  "baker_version": "1.0.0",
+  "assets": [
+    {
+      "id": "rocks/field/rock",
+      "type": "texture",
+      "source_hash": "cf3a24cbd01b9a7cea120e4e62a842206f1d66d5f0670fdf13d954f9695d540b",
+      "dist_hash": "cf3a24cbd01b9a7cea120e4e62a842206f1d66d5f0670fdf13d954f9695d540b",
+      "lod_tiers": [
+        "src"
+      ],
+      "budget_cost": 316.6
+    },
+    {
+      "id": "ships/pirate/hull",
+      "type": "texture",
+      "source_hash": "6c0f2adfd7ff53a0c3f4a723cdace5d865ac953d464454250d29990561edf2c4",
+      "dist_hash": "6c0f2adfd7ff53a0c3f4a723cdace5d865ac953d464454250d29990561edf2c4",
+      "lod_tiers": [
+        "src"
+      ],
+      "budget_cost": 322.1
+    },
+    {
+      "id": "ships/player/hull",
+      "type": "texture",
+      "source_hash": "2a0f70cf4754d9b1baf213b0e0e394a689f23e7eb2dbc04c0f35c5a678aa123d",
+      "dist_hash": "2a0f70cf4754d9b1baf213b0e0e394a689f23e7eb2dbc04c0f35c5a678aa123d",
+      "lod_tiers": [
+        "src"
+      ],
+      "budget_cost": 321.7
+    },
+    {
+      "id": "station/dock/hull",
+      "type": "texture",
+      "source_hash": "7e9e757ee3e16dd5c0e11b2968c71eac6bf7c0ab14a531c225c7862c3b94a899",
+      "dist_hash": "7e9e757ee3e16dd5c0e11b2968c71eac6bf7c0ab14a531c225c7862c3b94a899",
+      "lod_tiers": [
+        "src"
+      ],
+      "budget_cost": 636.5
+    }
+  ]
+}
