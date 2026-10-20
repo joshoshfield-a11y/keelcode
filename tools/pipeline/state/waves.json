@@ -33,9 +33,9 @@
     {
       "n": 5,
       "name": "Tooling hardening (cargo-aware keel CLI, smoke JSON skipped flag, baker variant hashes)",
-      "status": "queued",
+      "status": "in_progress_external",
       "brief": "workspace/game-kb/WAVE5-BRIEF.md",
-      "notes": "Brief drafted 2026-10-20 after Wave 4 merged (e3b21d3) on the user word: merge, then continue. Tooling only; pointer-lock fix and LICENSE explicitly out of scope."
+      "notes": "Launched 2026-10-20 on the user word (Go) by the parent agent on branch wave-5; the wave runner must not touch it. Brief: workspace/game-kb/WAVE5-BRIEF.md."
     }
   ]
 }
