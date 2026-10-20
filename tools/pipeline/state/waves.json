@@ -40,9 +40,9 @@
     {
       "n": 6,
       "name": "Pointer-lock camera-swing fix (ts-three + ts-babylon demos)",
-      "status": "complete",
+      "status": "green",
       "brief": "workspace/game-kb/WAVE6-BRIEF.md",
-      "notes": "COMPLETE on branch wave-6 (2a4b0ff), awaiting merge word. Pointer-lock acquisition burst discarded on lock in both TS demos (ADR-0016 supersedes 0009). Gates: tsc clean x2, vitest 53/53 x2, e2e 6/6 + 7/7 zero console errors, repro specs fail-first verified, rs-core strict parity 4/4 vs unmodified vectors (parent re-verified), perf byte-identical to baselines. Judgment call: discard used instead of Drift Arena clamp \u2014 clamp fails the tick-0 acceptance bar and would cap legit flicks; recorded in ADR-0016."
+      "notes": "COMPLETE + MERGED to master 2026-10-20 (user word). Pointer-lock burst discard in both TS demos (ADR-0016 supersedes 0009). Post-merge gates on master re-verified: tsc clean x2, vitest 53/53 x2, strict parity 4/4 vs unmodified vectors. KeelCode board clear; LICENSE is the only remaining user decision."
     }
   ]
 }
