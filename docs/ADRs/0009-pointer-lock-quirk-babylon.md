@@ -1,6 +1,7 @@
 # ADR-0009: Pointer-lock acquisition camera swing in the Babylon port
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0016 (Wave 6, 2026-10-20: the fix this ADR
+left as the user's call was authorized and landed in both TS backends)
 **Date:** 2026-10-19
 **Context:** KeelCode Wave 3 (`backends/ts-babylon`), game/player.ts port
 
