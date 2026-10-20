@@ -48,7 +48,7 @@ jobs:
       - run: cd backends/ts-babylon && npx playwright test e2e/parity-record.spec.ts
       - run: |
           cd backends/ts-babylon
-          npx vite preview -- --port 4174 --strictPort &
+          npm run preview -- --port 4174 --strictPort &
           SRV=$!
           for i in $(seq 1 60); do
             curl -s http://localhost:4174/ >/dev/null && break
