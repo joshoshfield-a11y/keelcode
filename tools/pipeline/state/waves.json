@@ -33,9 +33,9 @@
     {
       "n": 5,
       "name": "Tooling hardening (cargo-aware keel CLI, smoke JSON skipped flag, baker variant hashes)",
-      "status": "in_progress_external",
+      "status": "complete",
       "brief": "workspace/game-kb/WAVE5-BRIEF.md",
-      "notes": "Launched 2026-10-20 on the user word (Go) by the parent agent on branch wave-5; the wave runner must not touch it. Brief: workspace/game-kb/WAVE5-BRIEF.md."
+      "notes": "COMPLETE on branch wave-5 (125975c), awaiting merge word. 5a cargo-aware keel CLI (15/15 tests incl. real cargo fixture, exit codes pass through), 5b smoke --json skipped flag (contract 3/3, full all-backend smoke exit 0), 5c baker dist_hashes + ADR 0015 (7/7 tests, schema additive). Diff 10 files +538/-35, tools/framework/docs only. Spot-verified by parent (CLI 15/15, baker 7/7, scope clean)."
     }
   ]
 }
