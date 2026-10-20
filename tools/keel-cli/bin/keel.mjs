@@ -7,12 +7,16 @@
 // vectors, bake (asset-baker passthrough), room (safe-room passthrough),
 // and backend-aware smoke passthrough. These commands WRAP the 4a smoke
 // script, the 4b baker, and the pipeline room — they never edit them.
+//
+// Wave 5: dev/build/test are cargo-aware — in a project whose marker is
+// Cargo.toml (an rs-core scaffold) they route to cargo build / cargo
+// test / cargo run instead of the npm toolchain, exit codes verbatim.
 
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, statSync, mkdirSync, copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 
 const VALID_BACKENDS = ['ts-three', 'ts-babylon', 'rs-core'];
 
@@ -22,9 +26,10 @@ function help() {
 Usage:
   keel new <name> [--backend ts-three|ts-babylon|rs-core]
       Scaffold a game into ./<name>/ (default backend: ts-three)
-  keel dev                                Start the Vite dev server in the current project
-  keel build                              Type-check (tsc --noEmit) and build the project
-  keel test                               Run the vitest suite
+  keel dev                                Vite dev server (npm project) or cargo run of the
+                                          headless bin (Cargo project)
+  keel build                              tsc + vite build (npm) or cargo build (Cargo)
+  keel test                               vitest run (npm) or cargo test (Cargo)
   keel smoke [--backend <name>] [--json] [--skip-e2e]
       Run the framework smoke script; flags are forwarded verbatim
       (no flags = all three backends)
@@ -41,7 +46,7 @@ Usage:
 
 keel finds the KeelCode repo root by walking up from the current directory
 until it sees framework/SPEC.md. Project commands run in the nearest
-directory that has a package.json (a scaffolded game).`);
+directory that has a package.json or a Cargo.toml (a scaffolded game).`);
 }
 
 // Walk up from cwd until we find framework/SPEC.md. Throws if none found.
@@ -57,17 +62,44 @@ function findRepoRoot(start = process.cwd()) {
   }
 }
 
-// Walk up from cwd until we find package.json (the scaffolded game).
-function findProjectRoot(start = process.cwd()) {
+// Walk up from cwd to the nearest project directory — one holding a
+// package.json (npm project) or a Cargo.toml (cargo project, e.g. an
+// rs-core scaffold). The first marker found walking up wins.
+function findProject(start = process.cwd()) {
   let dir = resolve(start);
   while (true) {
-    if (existsSync(join(dir, 'package.json'))) return dir;
+    if (existsSync(join(dir, 'package.json'))) return { kind: 'npm', dir };
+    if (existsSync(join(dir, 'Cargo.toml'))) return { kind: 'cargo', dir };
     const parent = dirname(dir);
     if (parent === dir) {
-      throw new Error('Not inside a KeelCode project: no package.json found walking up from ' + start);
+      throw new Error('Not inside a KeelCode project: no package.json or Cargo.toml found walking up from ' + start);
     }
     dir = parent;
   }
+}
+
+// Pick the binary `keel dev` runs for a cargo project: the first [[bin]]
+// that is not the desktop renderer (keel-desktop needs a display/GPU and
+// is launched separately). Falls back to the [package] name (cargo's
+// default bin name), then null (plain `cargo run`).
+// Returns { bin, hasDesktop }.
+function cargoDevBin(cargoTomlText) {
+  const bins = [];
+  let pkgName = null;
+  let section = null;
+  for (const raw of cargoTomlText.split('\n')) {
+    const line = raw.trim();
+    if (line.startsWith('[[') && line.endsWith(']]')) { section = line.slice(2, -2); continue; }
+    if (line.startsWith('[') && line.endsWith(']')) { section = line.slice(1, -1); continue; }
+    const name = line.match(/^name\s*=\s*"([^"]+)"/);
+    if (!name) continue;
+    if (section === 'package' && pkgName === null) pkgName = name[1];
+    if (section === 'bin') bins.push(name[1]);
+  }
+  return {
+    bin: bins.find((b) => b !== 'keel-desktop') ?? pkgName,
+    hasDesktop: bins.includes('keel-desktop'),
+  };
 }
 
 // Copy a directory tree, skipping node_modules, dist, and target.
@@ -178,6 +210,43 @@ function passthrough(cmd, args, cwd) {
   });
 }
 
+// Project commands (dev/build/test): npm projects keep the exact Wave 1-4
+// behavior; cargo projects (rs-core scaffolds) route to cargo, with exit
+// codes propagated verbatim via passthrough() (ADR 0014 discipline).
+async function cmdDev() {
+  const proj = findProject();
+  if (proj.kind === 'cargo') {
+    const { bin, hasDesktop } = cargoDevBin(readFileSync(join(proj.dir, 'Cargo.toml'), 'utf8'));
+    const args = bin ? ['run', '--bin', bin] : ['run'];
+    console.log(`keel dev: cargo project — cargo ${args.join(' ')}`);
+    if (hasDesktop) {
+      console.log('keel dev: note — the desktop renderer is a separate binary (needs a display/GPU): cargo run --bin keel-desktop');
+    }
+    await passthrough('cargo', args, proj.dir);
+  } else {
+    await run('npx', ['vite'], proj.dir);
+  }
+}
+
+async function cmdBuild() {
+  const proj = findProject();
+  if (proj.kind === 'cargo') {
+    await passthrough('cargo', ['build'], proj.dir);
+  } else {
+    await run('npx', ['tsc', '--noEmit'], proj.dir);
+    await run('npx', ['vite', 'build'], proj.dir);
+  }
+}
+
+async function cmdTest() {
+  const proj = findProject();
+  if (proj.kind === 'cargo') {
+    await passthrough('cargo', ['test'], proj.dir);
+  } else {
+    await run('npx', ['vitest', 'run'], proj.dir);
+  }
+}
+
 // Wait until http://localhost:port/ answers, or throw after maxMs.
 // Mirrors the orchestration in framework/smoke/smoke.mjs (not imported).
 function pollPreview(port, maxMs) {
@@ -279,14 +348,13 @@ async function main() {
         cmdNew(rest[0], rest.slice(1));
         break;
       case 'dev':
-        await run('npx', ['vite'], findProjectRoot());
+        await cmdDev();
         break;
       case 'build':
-        await run('npx', ['tsc', '--noEmit'], findProjectRoot());
-        await run('npx', ['vite', 'build'], findProjectRoot());
+        await cmdBuild();
         break;
       case 'test':
-        await run('npx', ['vitest', 'run'], findProjectRoot());
+        await cmdTest();
         break;
       case 'smoke': {
         const root = findRepoRoot();

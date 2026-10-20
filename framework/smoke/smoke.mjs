@@ -14,6 +14,11 @@
  * Exits 0 only when every selected backend passes every stage; exits 1 on
  * the first failure, after printing a summary. Unknown --backend value ->
  * exit 2 with the valid list.
+ *
+ * With --json, every stage entry carries an explicit "skipped" boolean
+ * (Wave 5): stages that were not run (ts-babylon e2e under --skip-e2e,
+ * the rs-core perf no-op) report skipped: true instead of masquerading
+ * as ordinary passes.
  */
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -127,10 +132,10 @@ function tsBabylonStages() {
     }],
     [skipE2E ? 'e2e (skipped --skip-e2e)' : 'e2e (npx playwright test)', () => {
       if (!skipE2E) run('npx', ['playwright', 'test'], tsBabylon);
-    }],
+    }, skipE2E],
     [skipE2E ? 'vector replay (skipped --skip-e2e)' : 'vector replay (parity-record double-run)', () => {
       if (!skipE2E) run('npx', ['playwright', 'test', 'e2e/parity-record.spec.ts'], tsBabylon);
-    }],
+    }, skipE2E],
     ['perf (vite preview + measure.mjs)', async () => {
       if (!existsSync(path.join(tsBabylon, 'dist', 'index.html'))) {
         run('npm', ['run', 'build'], tsBabylon);
@@ -182,7 +187,7 @@ function rsCoreStages() {
       run('cargo', ['test', '--test', 'parity'], rsCore, rsCoreEnv({ KEEL_PARITY_STRICT: '1' }))],
     ['perf (skip: no runnable perf harness on headless (no GPU))', () => {
       console.log('skip: no runnable perf harness on headless (no GPU)');
-    }],
+    }, true],
   ];
 }
 
@@ -205,17 +210,17 @@ for (const b of order) {
   let ok = true;
   const stages = [];
   console.log(`\n########## backend: ${b} ##########`);
-  for (const [stageName, fn] of defs) {
+  for (const [stageName, fn, stageSkipped = false] of defs) {
     console.log(`\n### ${b}: ${stageName}`);
     const t0 = Date.now();
     try {
       await fn();
       const ms = Date.now() - t0;
-      stages.push({ name: stageName, ok: true, ms });
+      stages.push({ name: stageName, ok: true, ms, skipped: Boolean(stageSkipped) });
       console.log(`ok (${ms} ms)`);
     } catch (err) {
       const ms = Date.now() - t0;
-      stages.push({ name: stageName, ok: false, ms });
+      stages.push({ name: stageName, ok: false, ms, skipped: Boolean(stageSkipped) });
       console.error(`FAILED: ${err instanceof Error ? err.message : String(err)}`);
       ok = false;
       break;

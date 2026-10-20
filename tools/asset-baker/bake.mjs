@@ -12,6 +12,11 @@
 // validated against the schema after writing: a missing or hash-mismatched
 // asset fails the run BEFORE any backend boots (SPEC §5 test clause).
 //
+// Wave 5 (baker 1.1.0, ADR 0015): each entry also records `dist_hashes`,
+// a map of EVERY emitted dist file (primary + variants) to its sha256 —
+// v1's lone `dist_hash` covered only the primary file, so a changed WebP
+// variant went unnoticed. `dist_hash` stays as the primary file's hash.
+//
 // Zero runtime dependencies; node stdlib only.
 
 import { createHash } from 'node:crypto';
@@ -22,7 +27,7 @@ import {
 } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 
-const BAKER_VERSION = '1.0.0';
+const BAKER_VERSION = '1.1.0';
 
 // Verbatim from framework/schema/asset-manifest.schema.json.
 const ID_PATTERN = /^[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/;
@@ -126,6 +131,26 @@ function validateEntry(e) {
   if (typeof e.budget_cost !== 'number' || !Number.isFinite(e.budget_cost)) {
     problems.push(`budget_cost must be a number: ${JSON.stringify(e.budget_cost)}`);
   }
+  // dist_hashes is optional in the schema (additive, ADR 0015) so old
+  // manifests stay valid — but when present it must be a non-empty
+  // name -> sha256 map that includes the primary file's dist_hash.
+  if ('dist_hashes' in e) {
+    const dh = e.dist_hashes;
+    if (typeof dh !== 'object' || dh === null || Array.isArray(dh)) {
+      problems.push(`dist_hashes must be an object mapping dist file name to sha256: ${JSON.stringify(dh)}`);
+    } else {
+      const names = Object.keys(dh);
+      if (names.length < 1) problems.push('dist_hashes must not be empty');
+      for (const n of names) {
+        if (typeof dh[n] !== 'string' || !HEX64.test(dh[n])) {
+          problems.push(`dist_hashes["${n}"] is not 64-char hex: ${JSON.stringify(dh[n])}`);
+        }
+      }
+      if (!names.some((n) => dh[n] === e.dist_hash)) {
+        problems.push('dist_hashes must include the primary file hash (the dist_hash value)');
+      }
+    }
+  }
   return problems;
 }
 
@@ -157,6 +182,7 @@ function main() {
 
   const assets = [];
   const idToDistPath = new Map();
+  const idToDistFiles = new Map(); // id -> Map(dist file name -> path), primary + variants
 
   for (const rel of listFiles(srcDir)) {
     const srcPath = join(srcDir, rel);
@@ -178,23 +204,34 @@ function main() {
     mkdirSync(dirname(distPath), { recursive: true });
     copyFileSync(srcPath, distPath);
 
+    const base = id.slice(id.lastIndexOf('/') + 1);
+    const distFiles = new Map([[base + ext, distPath]]);
     const lodTiers = ['src'];
     if (cwebp && ext !== '.webp') {
       const webpPath = join(outDir, id + '.webp');
       const r = spawnSync('cwebp', ['-q', '80', srcPath, '-o', webpPath], { stdio: 'ignore' });
-      if (r.status === 0) lodTiers.push('webp');
-      else console.warn(`asset-baker: warning: cwebp failed for ${rel}, keeping copy-through`);
+      if (r.status === 0) {
+        lodTiers.push('webp');
+        distFiles.set(base + '.webp', webpPath);
+      } else console.warn(`asset-baker: warning: cwebp failed for ${rel}, keeping copy-through`);
     }
+
+    // Hash EVERY emitted dist file (ADR 0015); dist_hash remains the
+    // primary file's hash for backward compatibility.
+    const dist_hashes = {};
+    for (const [name, p] of distFiles) dist_hashes[name] = sha256Hex(p);
 
     assets.push({
       id,
       type: 'texture',
       source_hash: sha256Hex(srcPath),
-      dist_hash: sha256Hex(distPath),
+      dist_hash: dist_hashes[base + ext],
+      dist_hashes,
       lod_tiers: lodTiers,
       budget_cost: kb1(distPath),
     });
     idToDistPath.set(id, distPath);
+    idToDistFiles.set(id, distFiles);
     console.log(`asset-baker: baked ${id} -> ${id + ext} [${lodTiers.join(',')}]`);
   }
 
@@ -228,6 +265,20 @@ function main() {
     if (sha256Hex(distPath) !== e.dist_hash) {
       console.error(`asset-baker: validation failed: dist hash mismatch for ${e.id}`);
       process.exit(1);
+    }
+    // Every file recorded in dist_hashes (variants included) must exist
+    // on disk and re-hash to its recorded value.
+    const files = idToDistFiles.get(e.id);
+    for (const [name, hash] of Object.entries(e.dist_hashes ?? {})) {
+      const p = files?.get(name);
+      if (!p || !existsSync(p)) {
+        console.error(`asset-baker: validation failed: dist file missing for ${e.id} (${name})`);
+        process.exit(1);
+      }
+      if (sha256Hex(p) !== hash) {
+        console.error(`asset-baker: validation failed: dist_hashes mismatch for ${e.id} (${name})`);
+        process.exit(1);
+      }
     }
   }
   console.log(`asset-baker: validation passed (${readBack.assets.length} entries)`);
