@@ -27,8 +27,8 @@
       "brief": "workspace/game-kb/WAVE4-BRIEF.md",
       "n": 4,
       "name": "Convergence",
-      "notes": "4a-4c merged to main (a571caa). 4d Drift Arena complete on branch wave-4d (63adf9e), gates verified, awaiting merge word. 4d-gfx graphics overhaul complete on branch wave-4d-gfx (43132f4, stacked on wave-4d): ACES+IBL lighting, bloom (desktop tier), nebula dome + gas giant, merged-geometry ships, instanced asteroids, pooled particles; gates verified by parent (tsc clean, vitest 95/95, e2e 1/1 zero console errors); perf headless full-frame draws 134->106 (budget 150), tris 10532->31764 (budget 300k). Awaiting merge word for wave-4d + wave-4d-gfx.",
-      "status": "complete"
+      "notes": "COMPLETE + MERGED to main 2026-10-20 (merge e3b21d3, user word). 4a shared smoke CI, 4b asset-baker (ADR 0013), 4c broader keel CLI (ADR 0014), 4d STARFALL Drift Arena (first KeelCode game) + 4d-gfx graphics overhaul (ACES/IBL, tier-gated bloom, nebula, instancing, particles). Post-merge gates on main: tsc clean, vitest 95/95; e2e 1/1 verified pre-merge on wave-4d-gfx. Perf: draws 106/150, tris 31764/300k (headless).",
+      "status": "green"
     }
   ]
 }
